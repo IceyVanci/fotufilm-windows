@@ -1,0 +1,15 @@
+diff --git a/flutter/lib/model/selective.dart b/flutter/lib/model/selective.dart
+index 8d780fd..5076214 100644
+--- a/flutter/lib/model/selective.dart
++++ b/flutter/lib/model/selective.dart
+@@ -16,8 +16,8 @@ final selectionKeys = [
+   'shadows',
+   'saturation',
+   'vibrance',
+-  for (final band in const ['Shadows', 'Midtones', 'Highlights'])
+-    for (final axis in const ['Warmth', 'Tint', 'Level']) 'grade$band$axis',
++  for (final band in const ['阴影', '中间调', '高光'])
++    for (final axis in const ['暖度', '色调', '亮度']) 'grade$band$axis',
+ ];
+ 
+ /// The photograph's develop, as a selection starts with it (`selectionDevelop`).

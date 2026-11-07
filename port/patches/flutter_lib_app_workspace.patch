@@ -1,0 +1,42 @@
+diff --git a/flutter/lib/app/workspace.dart b/flutter/lib/app/workspace.dart
+index 9ce5fda..04bb282 100644
+--- a/flutter/lib/app/workspace.dart
++++ b/flutter/lib/app/workspace.dart
+@@ -140,8 +140,8 @@ class _WorkspaceState extends State<Workspace> {
+   Future<void> _open() async {
+     if (!editor.ready) return;
+     final files = await chooseFiles([
+-      fileType('Images', imageExtensions),
+-      fileType('Videos', videoExtensions),
++      fileType('图片', imageExtensions),
++      fileType('视频', videoExtensions),
+     ]);
+     if (!kIsWeb && files.isNotEmpty) HostWindow.noteRecent([for (final f in files) f.path]);
+     // One file brings its folder into the strip.
+@@ -283,7 +283,7 @@ class _WorkspaceState extends State<Workspace> {
+           bottom: 0,
+           width: hit,
+           child: _Resizer(
+-            label: 'Resize film list',
++            label: '调整胶片列表大小',
+             onDrag: (dx) => layout.setWidth(PanelSide.film, layout.widths.film + dx),
+             onEnd: layout.keepWidths,
+             onReset: () => layout.setWidth(PanelSide.film, Metrics.filmWidth, keep: true),
+@@ -296,7 +296,7 @@ class _WorkspaceState extends State<Workspace> {
+           bottom: 0,
+           width: hit,
+           child: _Resizer(
+-            label: 'Resize darkroom panel',
++            label: '调整暗房面板大小',
+             onDrag: (dx) =>
+                 layout.setWidth(PanelSide.inspector, layout.widths.inspector - dx),
+             onEnd: layout.keepWidths,
+@@ -409,7 +409,7 @@ class _DockGrabber extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) => Semantics(
+         button: true,
+-        label: 'Close panel',
++        label: '关闭面板',
+         child: GestureDetector(
+           behavior: HitTestBehavior.opaque,
+           onVerticalDragUpdate: (d) => onDrag(d.delta.dy),

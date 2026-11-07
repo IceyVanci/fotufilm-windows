@@ -1,0 +1,84 @@
+diff --git a/flutter/lib/model/catalogue.dart b/flutter/lib/model/catalogue.dart
+index 3d3ba58..c4cdd3f 100644
+--- a/flutter/lib/model/catalogue.dart
++++ b/flutter/lib/model/catalogue.dart
+@@ -6,6 +6,8 @@ import 'dart:convert';
+ 
+ import 'package:flutter/services.dart';
+ 
++import '../i18n/zh.dart';
++
+ typedef Json = Map<String, dynamic>;
+ 
+ class SliderSpec {
+@@ -34,8 +36,11 @@ class Catalogue {
+ 
+   final Json module;
+ 
+-  static Future<Catalogue> load() async =>
+-      Catalogue._(jsonDecode(await rootBundle.loadString('assets/generated/controls.json')) as Json);
++  static Future<Catalogue> load() async {
++    final module = jsonDecode(await rootBundle.loadString('assets/generated/controls.json')) as Json;
++    // The generated catalogue keeps the engine's English titles; the port shows Chinese ones.
++    return Catalogue._(localizeCatalogueValue(module) as Json);
++  }
+ 
+   List<Json> get controls => (module['EDITOR_CONTROLS'] as List).cast<Json>();
+   List<Json> get filmFormats => (module['FILM_FORMATS'] as List).cast<Json>();
+@@ -43,7 +48,7 @@ class Catalogue {
+   Json get profileMenus => module['PROFILE_MENUS'] as Json;
+ 
+   Json control(String field) => controls.firstWhere((c) => c['field'] == field,
+-      orElse: () => throw StateError('Unknown editor control: $field'));
++      orElse: () => throw StateError('未知的编辑控件：$field'));
+ 
+   String? detail(String field) {
+     for (final c in controls) {
+@@ -86,21 +91,21 @@ class Catalogue {
+   late final List<SliderSpec> sliders = [
+     catalogueSlider('cameraPreflash', 'Light', 0.005),
+     catalogueSlider('sceneLightKelvin', 'Source Illuminant', 1),
+-    SliderSpec(key: 'ev', label: 'Exposure', min: -3, max: 3, step: .05, def: 0, unit: 'EV',
++    SliderSpec(key: 'ev', label: '曝光', min: -3, max: 3, step: .05, def: 0, unit: 'EV',
+         group: 'Light', detail: detail('exposure')),
+-    SliderSpec(key: 'highlights', label: 'Highlights', min: -1, max: 1, step: .01, def: 0,
++    SliderSpec(key: 'highlights', label: '高光', min: -1, max: 1, step: .01, def: 0,
+         group: 'Light', detail: detail('highlights')),
+-    SliderSpec(key: 'shadows', label: 'Shadows', min: -1, max: 1, step: .01, def: 0,
++    SliderSpec(key: 'shadows', label: '阴影', min: -1, max: 1, step: .01, def: 0,
+         group: 'Light', detail: detail('shadows')),
+     SliderSpec(key: 'temperature', label: 'Temperature', min: 2000, max: 12000, step: 1,
+         def: 6504, unit: 'K', group: 'White Balance'),
+-    SliderSpec(key: 'tint', label: 'Tint', min: -100, max: 100, step: 1, def: 0,
++    SliderSpec(key: 'tint', label: '色调', min: -100, max: 100, step: 1, def: 0,
+         group: 'White Balance', detail: detail('tint')),
+-    SliderSpec(key: 'saturation', label: 'Saturation', min: 0, max: 2, step: .01, def: 1,
++    SliderSpec(key: 'saturation', label: '饱和度', min: 0, max: 2, step: .01, def: 1,
+         unit: '×', group: 'Color', detail: detail('saturation')),
+-    SliderSpec(key: 'vibrance', label: 'Vibrance', min: -1, max: 1, step: .01, def: 0,
++    SliderSpec(key: 'vibrance', label: '自然饱和度', min: -1, max: 1, step: .01, def: 0,
+         group: 'Color', detail: detail('vibrance')),
+-    SliderSpec(key: 'grain', label: 'Grain', min: 0, max: 2, step: .01, def: 1, unit: '×',
++    SliderSpec(key: 'grain', label: '颗粒', min: 0, max: 2, step: .01, def: 1, unit: '×',
+         group: 'Character', detail: detail('grain')),
+     for (final band in const ['Shadows', 'Midtones', 'Highlights'])
+       for (final axis in const ['Warmth', 'Tint', 'Level'])
+@@ -137,12 +142,15 @@ class Catalogue {
+   static Json profileControl(Json c, Json edit, Json? stock) {
+     final medium = profileMedium(edit, stock);
+     final profile = stock?['profile'] as Map?;
++    // A stock carries its own menus (viewing lights, and a baked profile's choices), which never pass
++    // through Catalogue.load, so their labels are translated here as well.
++    final choices = c['field'] == 'printLight'
++        ? (medium?['viewingLights'] ?? c['choices'])
++        : ((profile?['choices'] as Map?)?[c['field']] ?? c['choices']);
+     return {
+       ...c,
+       'scale': (profile?['scales'] as Map?)?[c['field']] ?? c['scale'],
+-      'choices': c['field'] == 'printLight'
+-          ? (medium?['viewingLights'] ?? c['choices'])
+-          : ((profile?['choices'] as Map?)?[c['field']] ?? c['choices']),
++      'choices': localizeCatalogueValue(choices),
+     };
+   }
+ 

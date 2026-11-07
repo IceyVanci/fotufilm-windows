@@ -1,0 +1,72 @@
+diff --git a/flutter/lib/ui/inspector/film_panel.dart b/flutter/lib/ui/inspector/film_panel.dart
+index 53402e2..43b2dda 100644
+--- a/flutter/lib/ui/inspector/film_panel.dart
++++ b/flutter/lib/ui/inspector/film_panel.dart
+@@ -14,12 +14,12 @@ List<Widget> _following(EditorModel editor) {
+     return [
+       Align(
+         alignment: Alignment.centerLeft,
+-        child: PillButton(camera ? 'Match the Camera' : 'Match the Film',
++        child: PillButton(camera ? '匹配相机' : '匹配胶片',
+             onPressed: () => editor.change({'format': null})),
+       ),
+     ];
+   }
+-  if (!camera) return const [Note('Following the film.')];
++  if (!camera) return const [Note('跟随胶片。')];
+   final followed = followedFormat(editor);
+   final name = editor.catalogue.filmFormats
+       .where((f) => f['id'] == followed)
+@@ -31,14 +31,14 @@ List<Widget> _following(EditorModel editor) {
+ List<Widget> filmPanel(InspectorControls c) {
+   if (!c.hasFilm) {
+     return const [
+-      Section(title: 'Normal', children: [InfoRow('Stock', 'None')]),
++      Section(title: '正常', children: [InfoRow('胶片型号', '无')]),
+     ];
+   }
+   final fixed = c.fixedSettings;
+   return [
+-    Section(title: 'Loaded Film', children: [
++    Section(title: '已载入胶片', children: [
+       if (fixed) const Note('Fixed profile: film settings are off.'),
+-      InfoRow('Stock', c.stock?['name'] as String? ?? ''),
++      InfoRow('胶片型号', c.stock?['name'] as String? ?? ''),
+     ]),
+     ?filmFormatSection(c),
+     ?filmConditionSection(c),
+@@ -50,10 +50,10 @@ List<Widget> filmPanel(InspectorControls c) {
+ Section? filmFormatSection(InspectorControls c) {
+   if (c.fixedSettings) return null;
+   final editor = c.editor;
+-  return Section(title: 'Film Format', children: [
++  return Section(title: '胶片画幅', children: [
+     FormatPicker(editor: editor),
+     SwitchRow(
+-      label: 'Magnified Detail',
++      label: '放大细节',
+       value: editor.formatDetail,
+       onChanged: editor.setFormatDetail,
+     ),
+@@ -63,16 +63,16 @@ Section? filmFormatSection(InspectorControls c) {
+ 
+ Section? filmConditionSection(InspectorControls c) => c.fixedSettings
+     ? null
+-    : Section(title: 'Film Condition', children: c.profileControls(const ['expired']));
++    : Section(title: '胶片状态', children: c.profileControls(const ['expired']));
+ 
+-Section halationSection(InspectorControls c) => Section(title: 'Halation', children: [
++Section halationSection(InspectorControls c) => Section(title: '光晕', children: [
+       PickerField<String>(
+-        label: 'Halation Model',
++        label: '光晕模型',
+         detail: c.catalogue.detail('halationModel'),
+         value: c.edit['halationModel'] as String? ?? 'legacy',
+         options: const [
+-          PickerOption('legacy', 'Legacy'),
+-          PickerOption('layered', 'Layered Transport'),
++          PickerOption('legacy', '经典'),
++          PickerOption('layered', '分层传输'),
+         ],
+         onChanged: (v) => c.editor.change({'halationModel': v}),
+       ),

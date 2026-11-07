@@ -1,0 +1,13 @@
+diff --git a/flutter/lib/ui/phone/phone_films.dart b/flutter/lib/ui/phone/phone_films.dart
+index 9c3df36..369718b 100644
+--- a/flutter/lib/ui/phone/phone_films.dart
++++ b/flutter/lib/ui/phone/phone_films.dart
+@@ -87,7 +87,7 @@ class _PhoneFilmsState extends State<PhoneFilms> {
+                       editor: editor,
+                       id: id ?? '',
+                       child: _FilmTile(
+-                        name: stock?['name'] as String? ?? 'Normal',
++                        name: stock?['name'] as String? ?? '正常',
+                         positive: stock?['reversal'] == true,
+                         thumbnail: doc?.filmThumbnails[id ?? ''] ?? doc?.importPicture,
+                         selected: id == selected,

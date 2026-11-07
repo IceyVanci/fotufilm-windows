@@ -1,0 +1,30 @@
+diff --git a/flutter/lib/ui/workspace/import_menu.dart b/flutter/lib/ui/workspace/import_menu.dart
+index 4fb7a47..00b5204 100644
+--- a/flutter/lib/ui/workspace/import_menu.dart
++++ b/flutter/lib/ui/workspace/import_menu.dart
+@@ -17,7 +17,7 @@ class ImportMenu extends StatelessWidget {
+   Widget build(BuildContext context) => Builder(
+         builder: (anchor) => QuietButton(
+           icon: 'plus',
+-          tooltip: 'Add media',
++          tooltip: '添加媒体',
+           size: size,
+           opensMenu: true,
+           onPressed: editor.exporting ? null : () => showImportMenu(anchor, editor, onImage),
+@@ -29,12 +29,12 @@ class ImportMenu extends StatelessWidget {
+ void showImportMenu(BuildContext anchor, EditorModel editor, VoidCallback onImage) {
+   final scans = editor.negatives;
+   showMenu(anchor, width: 200, [
+-    MenuItem(label: 'Image', onSelected: editor.ready ? onImage : null),
+-    MenuItem(label: 'Video', onSelected: editor.ready ? editor.video.chooseMovies : null),
+-    MenuItem(label: 'Negative', onSelected: scans.canImport ? scans.chooseNegatives : null),
++    MenuItem(label: '图像', onSelected: editor.ready ? onImage : null),
++    MenuItem(label: '视频', onSelected: editor.ready ? editor.video.chooseMovies : null),
++    MenuItem(label: '负片', onSelected: scans.canImport ? scans.chooseNegatives : null),
+     if (editor.engine?.opensPaths ?? true)
+       MenuItem(
+-          label: 'Trichromatic Negative',
++          label: '三色负片',
+           onSelected: scans.canMerge ? scans.chooseExposures : null),
+   ]);
+ }

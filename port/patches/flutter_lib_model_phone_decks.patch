@@ -1,0 +1,81 @@
+diff --git a/flutter/lib/model/phone_decks.dart b/flutter/lib/model/phone_decks.dart
+index 64d0d3b..b65b615 100644
+--- a/flutter/lib/model/phone_decks.dart
++++ b/flutter/lib/model/phone_decks.dart
+@@ -11,13 +11,13 @@ import 'negative_document.dart';
+ 
+ enum PhoneDeck {
+   film('Film Strip', 'fotu.deck.film'),
+-  negative('Negative', 'fotu.tab.emulsion'),
+-  grain('Grain', 'fotu.tab.grain'),
+-  lens('Lens', 'fotu.deck.lens'),
+-  print('Print', 'fotu.deck.print'),
++  negative('负片', 'fotu.tab.emulsion'),
++  grain('颗粒', 'fotu.tab.grain'),
++  lens('镜头', 'fotu.deck.lens'),
++  print('印放', 'fotu.deck.print'),
+   light('Light & Color', 'fotu.deck.light'),
+-  select('Select', 'fotu.tab.local'),
+-  crop('Crop', 'fotu.tab.geometry');
++  select('选择', 'fotu.tab.local'),
++  crop('裁剪', 'fotu.tab.geometry');
+ 
+   const PhoneDeck(this.title, this.glyph);
+   final String title, glyph;
+@@ -31,32 +31,32 @@ enum PhoneDeck {
+ }
+ 
+ enum DeckPage {
+-  films('Films', 'fotu.tab.films'),
+-  halation('Halation', 'fotu.tab.halation'),
+-  emulsion('Emulsion', 'fotu.tab.emulsion'),
+-  lab('Lab', 'fotu.tab.lab'),
+-  format('Format', 'fotu.ui.format'),
+-  negative('Film', 'fotu.tab.films'),
+-  filmBase('Film Base', 'fotu.tab.source'),
++  films('胶片', 'fotu.tab.films'),
++  halation('光晕', 'fotu.tab.halation'),
++  emulsion('乳剂', 'fotu.tab.emulsion'),
++  lab('实验室', 'fotu.tab.lab'),
++  format('画幅', 'fotu.ui.format'),
++  negative('胶片', 'fotu.tab.films'),
++  filmBase('片基', 'fotu.tab.source'),
+   scanColour('Colour', 'fotu.tab.color'),
+-  lightSource('Light Source', 'fotu.tab.lamp'),
+-  roll('Roll', 'fotu.deck.film'),
+-  grain('Grain', 'fotu.tab.grain'),
++  lightSource('光源', 'fotu.tab.lamp'),
++  roll('整卷', 'fotu.deck.film'),
++  grain('颗粒', 'fotu.tab.grain'),
+   grainModel('Model', 'fotu.deck.controls'),
+-  grainAdjust('Adjust', 'fotu.deck.controls'),
+-  filters('Filters', 'fotu.tab.filters'),
+-  correction('Correction', 'fotu.tab.correction'),
+-  output('Output', 'fotu.tab.output'),
+-  printAdjust('Adjust', 'fotu.deck.controls'),
+-  frame('Frame', 'fotu.deck.frame'),
+-  lamp('Lamp', 'fotu.tab.lamp'),
+-  exposure('Exposure', 'fotu.tab.exposure'),
+-  balance('Balance', 'fotu.tab.balance'),
+-  color('Color', 'fotu.tab.color'),
+-  grade('Grade', 'fotu.deck.grade'),
+-  hdr('HDR Highlights', 'fotu.tab.exposure'),
+-  select('Select', 'fotu.tab.local'),
+-  crop('Crop', 'fotu.tab.geometry');
++  grainAdjust('调整', 'fotu.deck.controls'),
++  filters('滤镜', 'fotu.tab.filters'),
++  correction('校正', 'fotu.tab.correction'),
++  output('输出', 'fotu.tab.output'),
++  printAdjust('调整', 'fotu.deck.controls'),
++  frame('边框', 'fotu.deck.frame'),
++  lamp('灯源', 'fotu.tab.lamp'),
++  exposure('曝光', 'fotu.tab.exposure'),
++  balance('平衡', 'fotu.tab.balance'),
++  color('颜色', 'fotu.tab.color'),
++  grade('调色', 'fotu.deck.grade'),
++  hdr('HDR 高光', 'fotu.tab.exposure'),
++  select('选择', 'fotu.tab.local'),
++  crop('裁剪', 'fotu.tab.geometry');
+ 
+   const DeckPage(this.title, this.glyph);
+   final String title, glyph;

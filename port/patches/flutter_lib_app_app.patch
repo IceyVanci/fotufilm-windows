@@ -1,0 +1,20 @@
+diff --git a/flutter/lib/app/app.dart b/flutter/lib/app/app.dart
+index 23cb6d9..6ef865d 100644
+--- a/flutter/lib/app/app.dart
++++ b/flutter/lib/app/app.dart
+@@ -25,9 +25,13 @@ class FotufilmApp extends StatelessWidget {
+     final phone = phoneScreen(MediaQuery.sizeOf(context),
+         mobile: mobilePlatform, forced: environment('FOTUFILM_PHONE') == '1');
+     return MaterialApp(
+-      title: 'Fotufilm',
++      title: 'Fotufilm 胶片暗房',
+       debugShowCheckedModeBanner: false,
+-      theme: ThemeData(fontFamily: editorFont, useMaterial3: true),
++      theme: ThemeData(
++          fontFamily: editorFont,
++          // Satoshi has no Chinese glyphs: the theme covers what editorText does not.
++          fontFamilyFallback: editorFontFallback,
++          useMaterial3: true),
+       // A phone draws everything larger, the menus and dialogs too (touch_scale.dart).
+       builder: (context, child) => TouchScale(child: child!),
+       home: PaletteScope(

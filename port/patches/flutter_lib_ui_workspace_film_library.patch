@@ -1,0 +1,65 @@
+diff --git a/flutter/lib/ui/workspace/film_library.dart b/flutter/lib/ui/workspace/film_library.dart
+index b4a59ba..d8a288e 100644
+--- a/flutter/lib/ui/workspace/film_library.dart
++++ b/flutter/lib/ui/workspace/film_library.dart
+@@ -70,7 +70,7 @@ class _FilmLibraryState extends State<FilmLibrary> {
+                 if (open) ...[
+                   Expanded(
+                     child: SegmentedControl<bool>(
+-                      items: const [(false, 'Films'), (true, 'Presets')],
++                      items: const [(false, '胶片'), (true, '预设')],
+                       selected: editor.presetsTab,
+                       onChanged: (presets) {
+                         // Each tab keeps its own search.
+@@ -94,7 +94,7 @@ class _FilmLibraryState extends State<FilmLibrary> {
+               Expanded(
+                 child: _SearchField(
+                   controller: _search,
+-                  placeholder: editor.presetsTab ? 'Search presets' : 'Search films',
++                  placeholder: editor.presetsTab ? '搜索预设' : '搜索胶片',
+                   onChanged: editor.presetsTab ? editor.presets.setSearch : editor.setSearch,
+                 ),
+               ),
+@@ -125,7 +125,7 @@ class _FilmLibraryState extends State<FilmLibrary> {
+   Widget _list(bool open) {
+     final editor = widget.editor;
+     final films = libraryFilms(widget.editor);
+-    if (films.isEmpty) return const LibraryEmpty('No matching films.');
++    if (films.isEmpty) return const LibraryEmpty('没有匹配的胶片。');
+     final selected = editor.edit['stock'] as String?;
+     final doc = editor.active;
+     // Beside the picture there is the height for the list.
+@@ -148,8 +148,8 @@ class _FilmLibraryState extends State<FilmLibrary> {
+               editor: editor,
+               id: id ?? '',
+               child: StockRow(
+-              name: stock?['name'] as String? ?? 'Normal',
+-              kind: stock == null ? 'No film' : 'Film',
++              name: stock?['name'] as String? ?? '正常',
++              kind: stock == null ? '无胶片' : '胶片',
+               thumbnail: doc?.filmThumbnails[id ?? ''] ?? doc?.importPicture,
+               selected: id == selected,
+               compact: !open,
+@@ -194,7 +194,7 @@ class _FilmLibraryState extends State<FilmLibrary> {
+             editor: editor,
+             id: id ?? '',
+             child: StripTile(
+-              name: stock?['name'] as String? ?? 'Normal',
++              name: stock?['name'] as String? ?? '正常',
+               thumbnail: doc?.filmThumbnails[id ?? ''] ?? doc?.importPicture,
+               selected: id == selected,
+               onPressed: doc == null ? null : () => editor.chooseStock(id),
+@@ -314,11 +314,11 @@ class _FilmTypePickerState extends State<_FilmTypePicker> with PointerTint {
+     final palette = Palette.of(context);
+     final filtered = widget.selected != FilmType.all;
+     return HoverTip(
+-      message: 'Film type',
++      message: '胶片类型',
+       child: Builder(
+         builder: (anchor) => tinted(
+           opensMenu: true,
+-          label: 'Film type',
++          label: '胶片类型',
+           value: widget.selected.title,
+           onTap: () => showMenu(anchor, alignEnd: true, width: 170, [
+             for (final type in widget.types)

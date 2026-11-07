@@ -1,0 +1,13 @@
+diff --git a/flutter/lib/ui/inspector/tone_curve_chart.dart b/flutter/lib/ui/inspector/tone_curve_chart.dart
+index a74d0f2..219496a 100644
+--- a/flutter/lib/ui/inspector/tone_curve_chart.dart
++++ b/flutter/lib/ui/inspector/tone_curve_chart.dart
+@@ -27,7 +27,7 @@ class ToneCurveChart extends StatelessWidget {
+           return Padding(
+             padding: padding,
+             child: Semantics(
+-              label: 'Tone curve',
++              label: '色调曲线',
+               value: _description(curve),
+               child: AspectRatio(
+                 aspectRatio: 280 / 168,

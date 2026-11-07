@@ -1,0 +1,13 @@
+diff --git a/flutter/lib/ui/inspector/controls.dart b/flutter/lib/ui/inspector/controls.dart
+index 86f7ab7..6a48d8c 100644
+--- a/flutter/lib/ui/inspector/controls.dart
++++ b/flutter/lib/ui/inspector/controls.dart
+@@ -120,7 +120,7 @@ class InspectorControls {
+         children: [
+           slider,
+           QuietButton(
+-            label: 'Use Film Return',
++            label: '使用胶片回光',
+             onPressed: enabled && profile.containsKey(field) ? () => set(null) : null,
+           ),
+         ],

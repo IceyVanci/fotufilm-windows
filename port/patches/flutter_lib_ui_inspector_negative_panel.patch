@@ -1,0 +1,88 @@
+diff --git a/flutter/lib/ui/inspector/negative_panel.dart b/flutter/lib/ui/inspector/negative_panel.dart
+index 755c8d5..ef8441c 100644
+--- a/flutter/lib/ui/inspector/negative_panel.dart
++++ b/flutter/lib/ui/inspector/negative_panel.dart
+@@ -11,8 +11,8 @@ import 'scan_controls.dart';
+ 
+ // The lights a scan can be made under (NegativeScanCrosstalk.Light).
+ const _scanLights = [
+-  PickerOption('white', 'White Light'),
+-  PickerOption('rgb', 'Red, Green and Blue LEDs'),
++  PickerOption('white', '白光'),
++  PickerOption('rgb', '红绿蓝 LED'),
+ ];
+ 
+ // How far a negative's reading undoes the crosstalk between the scan's channels and the film's
+@@ -37,9 +37,9 @@ List<Widget> negativePanel(InspectorControls c) {
+ Section negativeFilmSection(InspectorControls c) {
+   final editor = c.editor;
+   final suggestions = editor.negatives.suggestions;
+-  return Section(title: 'Negative', children: [
+-    InfoRow('Film', c.stock?['name'] as String? ?? 'Normal'),
+-    if (suggestions.isNotEmpty) const InfoRow('Base looks like', ''),
++  return Section(title: '负片', children: [
++    InfoRow('胶片', c.stock?['name'] as String? ?? '正常'),
++    if (suggestions.isNotEmpty) const InfoRow('片基外观', ''),
+     for (final s in suggestions)
+       ScanButton(
+         suggestionName(s),
+@@ -55,15 +55,15 @@ Section negativeFilmSection(InspectorControls c) {
+ Section filmBaseSection(InspectorControls c) {
+   final scans = c.editor.negatives;
+   final negative = scans.negative ?? const {};
+-  return Section(title: 'Film Base', children: [
+-    InfoRow('Clear film', negative['border'] != null ? 'Sampled' : 'Estimated'),
++  return Section(title: '片基', children: [
++    InfoRow('透明片基', negative['border'] != null ? '已取样' : '已估算'),
+     ScanButton(
+-      'Pick Clear Film',
++      '点选透明片基',
+       selected: scans.sampling,
+       onPressed: () => scans.setSampling(!scans.sampling),
+     ),
+     ScanButton(
+-      'Estimate',
++      '估算',
+       onPressed: negative['border'] == null ? null : () => scans.read({'border': null}),
+     ),
+   ]);
+@@ -73,15 +73,15 @@ Section filmBaseSection(InspectorControls c) {
+ Section scanColourSection(InspectorControls c) {
+   final scans = c.editor.negatives;
+   final negative = scans.negative ?? const {};
+-  return Section(title: 'Colour Separation', children: [
++  return Section(title: '色彩分离', children: [
+     PickerField<String>(
+-      label: 'Scanned Under',
++      label: '扫描光源',
+       value: negative['scanLight'] as String? ?? 'white',
+       options: _scanLights,
+       onChanged: (v) => scans.read({'scanLight': v}),
+     ),
+     AdjustmentRow(
+-      label: 'Crosstalk Correction',
++      label: '串扰校正',
+       detail: _crosstalkDetail,
+       value: (negative['crosstalk'] as num? ?? 0).toDouble(),
+       range: const SliderRange(min: 0, max: 1, step: .01, def: 0),
+@@ -98,17 +98,17 @@ Section? lightSourceSection(InspectorControls c) {
+   if (!scans.keepsLightFrames) return null;
+   final lightFrame = scans.negative?['lightFrame'] as String?;
+   final frames = scans.lightFrames;
+-  return Section(title: 'Light Source', children: [
++  return Section(title: '光源', children: [
+     PickerField<String?>(
+       value: frames.any((f) => f['id'] == lightFrame) ? lightFrame : null,
+       options: [
+-        const PickerOption(null, 'As Scanned'),
++        const PickerOption(null, '按扫描原样'),
+         for (final f in frames) PickerOption(f['id'] as String, f['name'] as String),
+       ],
+       onChanged: (id) => scans.read({'lightFrame': id}),
+     ),
+     ScanButton('Add Light Frame…', onPressed: scans.chooseLightFrame),
+-    ScanButton('Remove Light Frame',
++    ScanButton('移除亮场帧',
+         onPressed: lightFrame == null ? null : scans.removeLightFrame),
+   ]);
+ }

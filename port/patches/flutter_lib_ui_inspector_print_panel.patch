@@ -1,0 +1,64 @@
+diff --git a/flutter/lib/ui/inspector/print_panel.dart b/flutter/lib/ui/inspector/print_panel.dart
+index 6614aa7..3105df4 100644
+--- a/flutter/lib/ui/inspector/print_panel.dart
++++ b/flutter/lib/ui/inspector/print_panel.dart
+@@ -17,15 +17,15 @@ const _screenCMY = ['screenCyan', 'screenMagenta', 'screenYellow'];
+ List<Widget> printPanel(InspectorControls c) {
+   final editor = c.editor;
+   return [
+-    Section(title: 'Output', children: [
++    Section(title: '输出', children: [
+       ...printOutputControls(c),
+       ...printAdjustControls(c),
+       // The engine develops in Display P3, the space the web editor's canvas shows in the app.
+-      const InfoRow('Color space', 'Display P3'),
++      const InfoRow('色彩空间', 'Display P3'),
+     ]),
+     ?lampSection(c),
+     if (!c.fixedSettings && editor.active != null) PrintFrameSection(editor: editor),
+-    Section(title: 'Export', children: [
++    Section(title: '导出', children: [
+       Builder(
+         builder: (context) => Align(
+           alignment: Alignment.centerLeft,
+@@ -44,7 +44,7 @@ List<Widget> printOutputControls(InspectorControls c) {
+   final canMatchFilm = stock?['filmMedium'] != null && stock?['reflectionPrint'] != true;
+   final media = ((stock?['media'] as List?) ??
+           const [
+-            {'id': 'screen', 'name': 'Digital Reference'},
++            {'id': 'screen', 'name': '数字参考'},
+           ])
+       .cast<Map>();
+   final medium = (c.edit['medium'] ?? stock?['defaultMedium'] ?? 'screen') as String;
+@@ -56,11 +56,11 @@ List<Widget> printOutputControls(InspectorControls c) {
+       editor: editor,
+       offersBands: !c.fixedSettings && printMedium?['receiverBands'] == true,
+       picker: PickerField<String>(
+-        label: 'Output medium',
++        label: '输出介质',
+         enabled: c.hasFilm,
+         value: c.edit['mediumFollowsFilm'] == true && canMatchFilm ? _matchFilm : medium,
+         options: [
+-          if (canMatchFilm) const PickerOption(_matchFilm, 'Match Film'),
++          if (canMatchFilm) const PickerOption(_matchFilm, '匹配胶片'),
+           for (final m in media) PickerOption(m['id'] as String, m['name'] as String),
+         ],
+         onChanged: (choice) => editor.change(choice == _matchFilm
+@@ -92,7 +92,7 @@ List<Widget> printAdjustControls(InspectorControls c) {
+       Align(
+         alignment: Alignment.centerLeft,
+         child: PillButton(
+-          'Reset CMY',
++          '重置 CMY',
+           onPressed: cmyChanged
+               ? () => c.editor.change({
+                     'profile': Map.of(c.profile)..removeWhere((k, _) => _screenCMY.contains(k)),
+@@ -107,7 +107,7 @@ List<Widget> printAdjustControls(InspectorControls c) {
+ Section? lampSection(InspectorControls c) =>
+     Catalogue.profileMedium(c.edit, c.stock)?['enlarger'] == true
+         ? Section(
+-            title: 'Lamp',
++            title: '灯源',
+             // The enlarger's lamp is set once in a while; it starts folded away below the output.
+             initiallyOpen: false,
+             children: c.profileControls(const [
