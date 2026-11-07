@@ -44,7 +44,7 @@ F:\Futo\build.cmd -Algo lzms         更小的 exe（约 1.9x 压缩），首次
    需要 `SDKROOT` 指向 Swift 的 `Windows.sdk`、`FOTOFILM_AOT_DIR` 指向 AOT 核目录（脚本已设）。
 2. **界面** `flutter build windows --release --no-pub`
 3. **暂存** 把 `FotufilmHost.dll` 改名为 `libfotufilm.dll`，连同 32 个 Swift 运行时 DLL 与 `data\` 复制到 `dist\app`。
-4. **打包** `packaging\bin\fotofilm-pack.exe` 把 `dist\app` 压进启动器存根，得到单文件。
+4. **打包** `packaging\bin\fotufilm-pack.exe` 把 `dist\app` 压进启动器存根，得到单文件。
 
 ## 单文件怎么工作
 
@@ -71,8 +71,8 @@ exe = 启动器存根 + 压缩归档。第一次运行时解包，然后启动 `
 `packaging\launcher.cpp` 一个源文件编出两个程序：
 
 ```
-packaging\build-tools.ps1     -> bin\fotofilm-launch.exe（存根）
-                               bin\fotofilm-pack.exe   （打包器）
+packaging\build-tools.ps1     -> bin\fotufilm-launch.exe（存根）
+                               bin\fotufilm-pack.exe   （打包器）
 packaging\selftest.ps1        往返自测（含 40 MB 随机块、中文名、空文件、坏包检测）
 ```
 

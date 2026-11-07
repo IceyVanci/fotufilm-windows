@@ -9,7 +9,7 @@ Get-ChildItem 'F:\Futo\upstream\flutter\build\windows\x64\runner\Release\*.dll' 
 $total=(Get-ChildItem $src -File | Measure-Object Length -Sum).Sum
 foreach ($algo in @('lzms','xpress','mszip','store')) {
   $out = Join-Path $root ('pack-' + $algo + '.exe')
-  $p = Measure-Command { & (Join-Path $bin 'fotofilm-pack.exe') --stub (Join-Path $bin 'fotofilm-launch.exe') --input $src --output $out --algo $algo | Out-Null }
+  $p = Measure-Command { & (Join-Path $bin 'fotufilm-pack.exe') --stub (Join-Path $bin 'fotufilm-launch.exe') --input $src --output $out --algo $algo | Out-Null }
   $rt = Join-Path $root ('rt-' + $algo)
   $e = Measure-Command { $proc = Start-Process -FilePath $out -ArgumentList '--extract-only','--runtime-dir',$rt -Wait -PassThru; if ($proc.ExitCode -ne 0) { throw 'extract failed' } }
   $e2 = Measure-Command { $proc = Start-Process -FilePath $out -ArgumentList '--extract-only','--runtime-dir',$rt -Wait -PassThru }

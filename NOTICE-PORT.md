@@ -98,6 +98,6 @@
 
 - 本移植新增/修改的代码：**Apache-2.0**
 - 上游代码：**Apache-2.0**，版权归 MUAStudio Inc.
-- 47 个胶片配置与编辑器字形：**CC BY-SA 4.0**，版权归 MUAStudio Inc.，**原样分发，未修改**；署名 Fotufilm（https://fotofilm.com）
+- 47 个胶片配置与编辑器字形：**CC BY-SA 4.0**，版权归 MUAStudio Inc.，**原样分发，未修改**；署名 Fotufilm（https://fotufilm.com）
 
 完整条款见 `LICENSE`、`NOTICE`、`LICENSING.md`、`THIRD_PARTY_NOTICES.md` 与 `licenses/`。

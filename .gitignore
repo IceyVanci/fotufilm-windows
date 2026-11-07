@@ -5,6 +5,8 @@ artifacts/
 work/
 vendor/
 
+packaging/bin/
+
 *.log
 *.pdb
 *.lib

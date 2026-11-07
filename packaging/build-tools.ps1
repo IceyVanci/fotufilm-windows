@@ -1,4 +1,4 @@
-﻿# Builds fotofilm-launch.exe (self-extracting stub) and fotofilm-pack.exe.
+﻿# Builds fotufilm-launch.exe (self-extracting stub) and fotufilm-pack.exe.
 param([switch]$Clean)
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -19,8 +19,8 @@ $link = '/link /SUBSYSTEM:'
 $cmd = @(
   ('call "{0}" >nul' -f $vcvars),
   ('cd /d "{0}"' -f $here),
-  ('cl {0} "{1}" /Fe:"{2}\fotofilm-launch.exe" {3}WINDOWS cabinet.lib shell32.lib user32.lib gdi32.lib' -f $common, $src, $bin, $link),
-  ('cl {0} /DFOTOFILM_PACKER "{1}" /Fe:"{2}\fotofilm-pack.exe" {3}CONSOLE cabinet.lib shell32.lib user32.lib gdi32.lib' -f $common, $src, $bin, $link)
+  ('cl {0} "{1}" /Fe:"{2}\fotufilm-launch.exe" {3}WINDOWS cabinet.lib shell32.lib user32.lib gdi32.lib' -f $common, $src, $bin, $link),
+  ('cl {0} /DFOTUFILM_PACKER "{1}" /Fe:"{2}\fotufilm-pack.exe" {3}CONSOLE cabinet.lib shell32.lib user32.lib gdi32.lib' -f $common, $src, $bin, $link)
 ) -join ' && '
 
 Write-Host "Compiling with $vs"

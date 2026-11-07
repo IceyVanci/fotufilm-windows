@@ -23,7 +23,7 @@ scripts\build.ps1 -Source work\1.15 -Version 1.15
 | 文档、网页 | 重放一遍即可 | 10 分钟 |
 | 界面文案 | 重放，扫描器列出没有的词条再补 | 30 分钟 |
 | 新增控件 / 目录 | 补词条，可能补图标 | 1–2 小时 |
-| 改 Halide 阶段（`Sources/FotofilmHalide/Stages/*.h`） | 重新生成全部 AOT 核 | 机器时间 20 分钟 |
+| 改 Halide 阶段（`Sources/FotufilmHalide/Stages/*.h`） | 重新生成全部 AOT 核 | 机器时间 20 分钟 |
 | 改引擎 C ABI | 改 Host 与 FFI | 半天起 |
 
 ## 最容易出事的三处

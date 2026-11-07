@@ -104,7 +104,7 @@ $env:DART_SUPPRESS_ANALYTICS = 'true'
 $env:HL_WINDOWS_TMP_DIR = 'F:\Futo\tmp'
 $env:FOTOFILM_AOT_DIR = $AotDir
 $env:HALIDE_ROOT = $HalideRoot
-$stageHeaders = Join-Path $Upstream 'Sources\FotofilmHalide'
+$stageHeaders = Join-Path $Upstream 'Sources\FotufilmHalide'
 $newestStage = Get-ChildItem $stageHeaders -Recurse -Include '*.h','*.cpp' -File -ErrorAction SilentlyContinue |
   Sort-Object LastWriteTime -Descending | Select-Object -First 1
 $newestAot = Get-ChildItem $AotDir -Filter '*.lib' -File -ErrorAction SilentlyContinue |
@@ -209,8 +209,8 @@ Done
 # ---- package ---------------------------------------------------------------------------------
 Step 'single executable'
 $tools = Join-Path $Root 'packaging'
-$packer = Join-Path $tools 'bin\fotofilm-pack.exe'
-$stub   = Join-Path $tools 'bin\fotofilm-launch.exe'
+$packer = Join-Path $tools 'bin\fotufilm-pack.exe'
+$stub   = Join-Path $tools 'bin\fotufilm-launch.exe'
 if (-not (Test-Path $packer) -or -not (Test-Path $stub)) {
   & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $tools 'build-tools.ps1')
   if ($LASTEXITCODE -ne 0) { Fail 'could not build the packaging tools' }

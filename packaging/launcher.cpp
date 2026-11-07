@@ -1,8 +1,8 @@
 // Fotufilm single-file packaging: a self-extracting launcher and the packer that fills it.
 //
 // One source file builds two programs:
-//   cl /DFOTOFILM_PACKER ...  -> fotofilm-pack.exe    (build machine)
-//   cl ...                    -> fotofilm-launch.exe  (the stub the payload is appended to)
+//   cl /DFOTUFILM_PACKER ...  -> fotufilm-pack.exe    (build machine)
+//   cl ...                    -> fotufilm-launch.exe  (the stub the payload is appended to)
 //
 // Layout of a packed exe:
 //   [stub PE image][ArchiveHeader][EntryRec + name UTF-16LE]*[blob]*[Trailer]
@@ -129,7 +129,7 @@ static bool RemoveTree(const std::wstring& path) {
   return GetFileAttributesW(path.c_str()) == INVALID_FILE_ATTRIBUTES;
 }
 
-#ifdef FOTOFILM_PACKER
+#ifdef FOTUFILM_PACKER
 
 static bool ReadWholeFile(const std::wstring& path, std::vector<uint8_t>& out) {
   HANDLE h = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
@@ -194,10 +194,10 @@ static bool DecompressBuffer(DWORD algo, const uint8_t* in, size_t inSize, uint8
   return ok && produced == outSize;
 }
 
-#endif // FOTOFILM_PACKER
+#endif // FOTUFILM_PACKER
 
 // ── launcher ───────────────────────────────────────────────────────────────────
-#ifndef FOTOFILM_PACKER
+#ifndef FOTUFILM_PACKER
 
 struct Splash {
   HWND window = nullptr;
@@ -686,7 +686,7 @@ int wmain(int argc, wchar_t** argv) {
     else if (a == L"--no-compress") algo = ALGO_STORE;
     else if (a == L"--verbose") verbose = true;
     else if (a == L"--help" || a == L"-h") {
-      fwprintf(stdout, L"fotofilm-pack --stub <launcher> --input <dir> --output <out.exe> "
+      fwprintf(stdout, L"fotufilm-pack --stub <launcher> --input <dir> --output <out.exe> "
                        L"[--name text] [--app fotufilm.exe] [--algo lzms|xpress|mszip|store] [--verbose]\n");
       return 0;
     } else { fwprintf(stderr, L"unknown argument %ls\n", a.c_str()); return 2; }

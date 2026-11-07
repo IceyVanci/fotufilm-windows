@@ -17,7 +17,7 @@ $zeros = New-Object byte[] (5MB)
 for ($i = 0; $i -lt 12; $i++) { ('row {0}' -f $i) | Set-Content (Join-Path $src ('f{0:D2}.txt' -f $i)) }
 
 $packed = Join-Path $root 'Fotufilm-test.exe'
-& (Join-Path $bin 'fotofilm-pack.exe') --stub (Join-Path $bin 'fotofilm-launch.exe') --input $src --output $packed --name 'Fotufilm self test' --algo lzms
+& (Join-Path $bin 'fotufilm-pack.exe') --stub (Join-Path $bin 'fotufilm-launch.exe') --input $src --output $packed --name 'Fotufilm self test' --algo lzms
 if ($LASTEXITCODE -ne 0) { throw 'pack failed' }
 $packedSize = (Get-Item $packed).Length
 
