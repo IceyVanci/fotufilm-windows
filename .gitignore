@@ -1,0 +1,13 @@
+# Release binaries, uploaded to GitHub Releases rather than committed.
+artifacts/
+
+# Build trees the sync script materialises.
+work/
+vendor/
+
+*.log
+*.pdb
+*.lib
+*.obj
+.DS_Store
+Thumbs.db
