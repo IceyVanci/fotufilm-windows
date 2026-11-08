@@ -10,9 +10,9 @@ upstream_release = "1.15"
 
 # The port's own version: upstream release, then .0-w<revision>.
 port_version = "1.15.0"
-port_revision = "1"
-port_release = "1.15.0-w1"
-port_release_date = "2026-11-07"
+port_revision = "2"
+port_release = "1.15.0-w2"
+port_release_date = "2026-11-08"
 
 # What built it.
 swift = "6.2 (Windows), x86_64"

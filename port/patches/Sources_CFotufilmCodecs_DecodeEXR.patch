@@ -1,0 +1,12 @@
+diff --git a/Sources/CFotufilmCodecs/DecodeEXR.cpp b/Sources/CFotufilmCodecs/DecodeEXR.cpp
+index dc09aa7..f647895 100644
+--- a/Sources/CFotufilmCodecs/DecodeEXR.cpp
++++ b/Sources/CFotufilmCodecs/DecodeEXR.cpp
+@@ -19,6 +19,7 @@
+ #endif
+ 
+ #include <cstring>
++#include "Utf8Paths.h"
+ 
+ namespace ffc {
+ 

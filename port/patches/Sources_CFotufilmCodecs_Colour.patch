@@ -1,0 +1,12 @@
+diff --git a/Sources/CFotufilmCodecs/Colour.cpp b/Sources/CFotufilmCodecs/Colour.cpp
+index 1759aee..faec686 100644
+--- a/Sources/CFotufilmCodecs/Colour.cpp
++++ b/Sources/CFotufilmCodecs/Colour.cpp
+@@ -14,6 +14,7 @@
+ #include <mutex>
+ #include <exception>
+ #include <thread>
++#include "Utf8Paths.h"
+ 
+ namespace ffc {
+ namespace {

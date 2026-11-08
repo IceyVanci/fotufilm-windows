@@ -1,0 +1,12 @@
+diff --git a/Sources/CFotufilmCodecs/DecodeHEIF.cpp b/Sources/CFotufilmCodecs/DecodeHEIF.cpp
+index 0063bb4..0e733f4 100644
+--- a/Sources/CFotufilmCodecs/DecodeHEIF.cpp
++++ b/Sources/CFotufilmCodecs/DecodeHEIF.cpp
+@@ -12,6 +12,7 @@
+ #include <algorithm>
+ #include <cstring>
+ #include <memory>
++#include "Utf8Paths.h"
+ 
+ namespace ffc {
+ 

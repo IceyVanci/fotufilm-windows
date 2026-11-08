@@ -1,0 +1,12 @@
+diff --git a/Sources/CFotufilmCodecs/DecodeJPEG.cpp b/Sources/CFotufilmCodecs/DecodeJPEG.cpp
+index e3e8910..b8b43aa 100644
+--- a/Sources/CFotufilmCodecs/DecodeJPEG.cpp
++++ b/Sources/CFotufilmCodecs/DecodeJPEG.cpp
+@@ -11,6 +11,7 @@
+ #include <cstring>
+ 
+ #include <jpeglib.h>
++#include "Utf8Paths.h"
+ 
+ namespace ffc {
+ namespace {

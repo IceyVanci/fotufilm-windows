@@ -1,0 +1,12 @@
+diff --git a/Sources/CFotufilmCodecs/DecodeTIFF.cpp b/Sources/CFotufilmCodecs/DecodeTIFF.cpp
+index 971eda1..b8d56ab 100644
+--- a/Sources/CFotufilmCodecs/DecodeTIFF.cpp
++++ b/Sources/CFotufilmCodecs/DecodeTIFF.cpp
+@@ -8,6 +8,7 @@
+ #include <cstring>
+ 
+ #include <tiffio.h>
++#include "Utf8Paths.h"
+ 
+ namespace ffc {
+ namespace {

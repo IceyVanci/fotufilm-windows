@@ -1,0 +1,12 @@
+diff --git a/Sources/CFotufilmCodecs/Encode.cpp b/Sources/CFotufilmCodecs/Encode.cpp
+index 7d49f69..161b654 100644
+--- a/Sources/CFotufilmCodecs/Encode.cpp
++++ b/Sources/CFotufilmCodecs/Encode.cpp
+@@ -17,6 +17,7 @@
+ #if __has_include(<libheif/heif.h>)
+ #define FFC_HAS_HEIF 1
+ #include <libheif/heif.h>
++#include "Utf8Paths.h"
+ #endif
+ 
+ namespace ffc {

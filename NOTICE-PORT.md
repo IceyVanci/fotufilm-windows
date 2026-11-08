@@ -15,7 +15,7 @@
 
 ## 规模
 
-相对 v1.15：**修改 105 个文件、新增 27 个文件**（另有 `.dart_tool`、`.idea`、`flutter/assets/generated` 等构建期产物，不计入）。
+相对 v1.15：**修改 116 个文件、新增 28 个文件**（另有 `.dart_tool`、`.idea`、`flutter/assets/generated` 等构建期产物，不计入）。
 
 本仓库不复制上游代码：改动以 `port/overlay/`（新增与原样保留的文件）与 `port/patches/`（补丁）两种形式保存。
 
@@ -31,6 +31,7 @@
 | `Sources/FotufilmHalide/include/FotufilmHalide.h` | 导出 `fotufilm_halide_shutdown` |
 | `Sources/FotufilmHost/HostPlatform.swift`、`HostPlatform+Windows.swift`（新增） | 平台分派；Windows 走 `HalideGPUDeveloper`，只接线静态图片相关的宿主服务 |
 | `Sources/FotufilmHost/HostDeveloper+HalideGPU.swift`、`CInterface.swift` | GPU 路径接线、引擎销毁时释放设备 |
+| `Sources/CFotufilmCodecs/Utf8Paths.h`（新增）与 11 个编解码 TU | 让 CRT 的窄字符文件 API 按 UTF-8 解析路径。Windows 用 ANSI 代码页（简体中文是 GBK）读窄文件名，而引擎收到的是 Dart 传来的 UTF-8，中文路径的图片因此打不开；模块加载时把字符区域设为 UTF-8 即可，见第六节 |
 | `Package.swift` | vcpkg（`x64-windows-static-md`）与 Halide 探测、AOT 核自动发现、`_USE_MATH_DEFINES` |
 | `tools/generate_halide_ios.cpp` | 增加 `--windows-vulkan` 平台，生成 Windows AOT 核 |
 
@@ -93,6 +94,14 @@
 - 修正 `ui/inspector/grade_deck.dart`：色带名与轴名上一版被误译成中文，导致 `grade$band$axis`
   参数键失配、调色盘写入无效。现恢复英文键，只在显示处翻译。
 - 未接入的宿主服务（视频、插件、更新、社区胶片包）维持上游 `HostPlatform+Windows.swift` 的既有状态。
+
+## 七、1.15.0-w2
+
+- 修复：路径含中文的图片无法打开。`ffc_decode` 及其下层（fopen、LibRaw、libtiff、libheif、OpenEXR）在
+  Windows 上用 ANSI 代码页解析窄文件名，而引擎从 Dart 拿到的是 UTF-8，于是中文目录下的照片被报成
+  "Could not open"。`Utf8Paths.h` 在编解码模块加载时把 `LC_CTYPE` 设为 UTF-8；只改字符区域，
+  数值区域（小数点在 printf 里的写法）保持 C 运行时的原样。
+- 实测：同一个 JPEG，ASCII 路径两版都能打开；中文路径在 w1 报错、w2 打开并给出 6000×4000。
 
 ## 许可
 

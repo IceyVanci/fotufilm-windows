@@ -1,0 +1,12 @@
+diff --git a/Sources/CFotufilmCodecs/Codecs.cpp b/Sources/CFotufilmCodecs/Codecs.cpp
+index 2605b97..347c4d8 100644
+--- a/Sources/CFotufilmCodecs/Codecs.cpp
++++ b/Sources/CFotufilmCodecs/Codecs.cpp
+@@ -16,6 +16,7 @@
+ #include <cstring>
+ #include <memory>
+ #include <new>
++#include "Utf8Paths.h"
+ 
+ namespace ffc {
+ namespace {

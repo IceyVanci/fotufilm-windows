@@ -1,0 +1,12 @@
+diff --git a/Sources/CFotufilmCodecs/RawDecode.cpp b/Sources/CFotufilmCodecs/RawDecode.cpp
+index eac53e8..00b72fa 100644
+--- a/Sources/CFotufilmCodecs/RawDecode.cpp
++++ b/Sources/CFotufilmCodecs/RawDecode.cpp
+@@ -23,6 +23,7 @@
+ #include <cstdio>
+ #include <limits>
+ #include <memory>
++#include "Utf8Paths.h"
+ 
+ namespace ffc {
+ namespace {
