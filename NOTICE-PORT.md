@@ -110,3 +110,25 @@
 - 47 个胶片配置与编辑器字形：**CC BY-SA 4.0**，版权归 MUAStudio Inc.，**原样分发，未修改**；署名 Fotufilm（https://fotufilm.com）
 
 完整条款见 `LICENSE`、`NOTICE`、`LICENSING.md`、`THIRD_PARTY_NOTICES.md` 与 `licenses/`。
+
+## 八、1.15.0-w3
+
+打开 RAW 的三处改动，全部在移植层，不动上游的解码参数语义：
+
+- **LibRaw 用 OpenMP 重编**。vcpkg 的 libraw 端口默认关掉 OpenMP（`"default-features": false`），
+  原来的静态库一个线程跑去马赛克。改为 `libraw[openmp]:x64-windows-static-md` 后引擎链接 MSVC 的
+  OpenMP 运行时，发行包随附 `vcomp140.dll`（208 KB，取自工具链的 VC++ 可再发行目录）。
+- **RAW 先解工作副本**。`PortableImageDecoder` 原本只在 Android 上走 `working()`，现在 Windows 同样：
+  先按长边 2560 解一份，全尺寸解码留给导出与放大（`decodeLarger`）。`FOTOFILM_RAW_WORKING_EDGE`
+  可覆盖这个边长，`0` 表示按原尺寸解码。
+- **放宽半尺寸阈值**。`half_size` 原来要求请求边长不超过原生的 1/4，现在 1/2 —— 2560 的预览请求
+  在 6024 px 的机器上因此能用四分之一像素的去马赛克，再由既有的缩小步骤降到请求尺寸。
+
+同一张 24 MP ARW（DSC04506.ARW），Ryzen 7 7700，8 核 16 线程，三次取热态最好值：
+
+| 版本 | 全尺寸导入 | 默认导入（工作副本） |
+|---|---|---|
+| 1.15.0-w2 | 3734 ms | 3734 ms |
+| 1.15.0-w3 | **953 ms** | **446 ms** |
+
+JPEG 同场景作对照：约 883–1094 ms，未变。

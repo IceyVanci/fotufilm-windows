@@ -122,6 +122,9 @@ let vcpkgLinkerSettings: [LinkerSetting] = {
         let name = String(entry.dropLast(4))
         settings.append(.linkedLibrary(name, .when(platforms: windowsOnly)))
     }
+    // LibRaw is built with its OpenMP feature here, so the codecs call MSVC's OpenMP runtime;
+    // vcomp.lib lives in the toolchain, not in the vcpkg tree.
+    settings.append(.linkedLibrary("vcomp", .when(platforms: windowsOnly)))
     return settings
 }()
 

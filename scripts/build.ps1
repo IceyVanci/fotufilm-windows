@@ -104,7 +104,7 @@ $env:DART_SUPPRESS_ANALYTICS = 'true'
 $env:HL_WINDOWS_TMP_DIR = 'F:\Futo\tmp'
 $env:FOTOFILM_AOT_DIR = $AotDir
 $env:HALIDE_ROOT = $HalideRoot
-$stageHeaders = Join-Path $Upstream 'Sources\FotufilmHalide'
+$stageHeaders = Join-Path $Upstream 'Sources\FotofilmHalide'
 $newestStage = Get-ChildItem $stageHeaders -Recurse -Include '*.h','*.cpp' -File -ErrorAction SilentlyContinue |
   Sort-Object LastWriteTime -Descending | Select-Object -First 1
 $newestAot = Get-ChildItem $AotDir -Filter '*.lib' -File -ErrorAction SilentlyContinue |
@@ -200,6 +200,12 @@ Get-ChildItem $Release -Force | Where-Object { $skip -notcontains $_.Name -and $
 $engineDll = Join-Path $EngineOut 'FotufilmHost.dll'
 if (-not (Test-Path $engineDll)) { Fail 'the engine build is missing' }
 Copy-Item $engineDll (Join-Path $App 'libfotufilm.dll') -Force
+# LibRaw's OpenMP feature makes the engine call MSVC's OpenMP runtime, which is not part of the
+# VC++ app-local set we otherwise ship; take it from the toolchain's redistributable folder.
+$vcomp = Get-ChildItem (Join-Path (Split-Path -Parent $vcvars) '..\..\Redist\MSVC') -Recurse -Filter 'vcomp140.dll' -ErrorAction SilentlyContinue |
+  Where-Object { $_.FullName -match '\\x64\\' -and $_.FullName -notmatch 'debug|onecore' } | Select-Object -First 1
+if ($vcomp) { Copy-Item $vcomp.FullName (Join-Path $App 'vcomp140.dll') -Force; Write-Host ('    vcomp140.dll from ' + $vcomp.FullName) }
+else { Write-Host '    warning: vcomp140.dll not found; an OpenMP RAW decode needs it at run time' -ForegroundColor Yellow }
 Get-ChildItem 'F:\Futo\toolchain\swift\*.dll' | Copy-Item -Destination $App -Force
 $resources = Join-Path $EngineOut 'Fotufilm_FotufilmCore.resources'
 if (Test-Path $resources) { Copy-Item $resources $App -Recurse -Force }

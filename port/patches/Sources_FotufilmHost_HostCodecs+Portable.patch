@@ -1,0 +1,35 @@
+diff --git a/Sources/FotufilmHost/HostCodecs+Portable.swift b/Sources/FotufilmHost/HostCodecs+Portable.swift
+index 4dbfe90..c924822 100644
+--- a/Sources/FotufilmHost/HostCodecs+Portable.swift
++++ b/Sources/FotufilmHost/HostCodecs+Portable.swift
+@@ -120,7 +120,7 @@ private extension String {
+ /// The editor's photographs: RAW with its camera profile, as `CoreImageDecoder` opens them.
+ struct PortableImageDecoder: HostImageDecoder {
+     func decode(_ url: URL) throws -> HostImage {
+-        #if os(Android)
++        #if os(Android) || os(Windows)
+         if let image = try Self.working(url) { return image }
+         #endif
+         return try Self.decode(url, options: UInt32(FFC_DECODE_SCENE))
+@@ -150,7 +150,7 @@ struct PortableImageDecoder: HostImageDecoder {
+         return image
+     }
+ 
+-    #if os(Android)
++    #if os(Android) || os(Windows)
+     /// A phone holds a camera RAW as the iPhone does: decoded once no longer than the editor's
+     /// working edge, the iPhone's preview ceiling (`PreviewViewport.baseLongEdgeCeiling`), and again
+     /// only for what that cannot cover, an export. Held whole, a 61-megapixel RAW is a gigabyte of
+@@ -158,7 +158,11 @@ struct PortableImageDecoder: HostImageDecoder {
+     static let workingLongEdge = 2560
+ 
+     private static func working(_ url: URL) throws -> HostImage? {
+-        guard let raw = try rawScene(url, longEdge: workingLongEdge) else { return nil }
++        // The editor's working edge, unless FOTOFILM_RAW_WORKING_EDGE overrides it: 0 decodes the
++        // file at its own size, which is what a desktop host did before this path existed.
++        let edge = ProcessInfo.processInfo.environment["FOTOFILM_RAW_WORKING_EDGE"]
++            .flatMap { Int($0) } ?? workingLongEdge
++        guard let raw = try rawScene(url, longEdge: edge) else { return nil }
+         let scene = raw.decoded
+         let image = HostImage(working: scene.rgba, width: scene.width, height: scene.height,
+                               naturalWidth: raw.width, naturalHeight: raw.height,

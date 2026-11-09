@@ -1,5 +1,5 @@
 diff --git a/Sources/CFotufilmCodecs/RawDecode.cpp b/Sources/CFotufilmCodecs/RawDecode.cpp
-index eac53e8..00b72fa 100644
+index eac53e8..081623a 100644
 --- a/Sources/CFotufilmCodecs/RawDecode.cpp
 +++ b/Sources/CFotufilmCodecs/RawDecode.cpp
 @@ -23,6 +23,7 @@
@@ -10,3 +10,16 @@ index eac53e8..00b72fa 100644
  
  namespace ffc {
  namespace {
+@@ -254,8 +255,10 @@ static void developRaw(const std::string &path, uint32_t options, uint32_t longE
+     params.user_qual = 3; // AHD for Bayer, three-pass interpolation for X-Trans
+     params.user_flip = -1;
+     const uint32_t nativeLong = uint32_t(std::max(nativeWidth, nativeHeight));
+-    // Half size where the Mac's scale factor (`RawDecode.scaleFactor`) is at most one half.
+-    params.half_size = (options & FFC_DECODE_EXPOSURE) || (longEdge > 0 && 4ull * longEdge <= nativeLong)
++    // Half size where the Mac's scale factor (`RawDecode.scaleFactor`) is at most one half: the
++    // demosaic then works on the quarter of the pixels and the reduction below takes it the rest
++    // of the way, so a preview-sized request no longer pays for a full sensor.
++    params.half_size = (options & FFC_DECODE_EXPOSURE) || (longEdge > 0 && 2ull * longEdge <= nativeLong)
+         ? 1 : 0;
+ 
+     // Keep RAW, working camera RGB, demosaic scratch, processed RGB16 and output live together

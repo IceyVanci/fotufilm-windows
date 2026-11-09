@@ -184,3 +184,19 @@ flutter test test\catalogue_test.dart
 ```
 
 覆盖：四个面板要的分组都有滑块、调色板参数键拼得对、`module[...]` 的键都在、滑块标签没有英文残留。
+
+## vcpkg 依赖
+
+编解码库来自 vcpkg 的静态树（`toolchain\vcpkg`），triplet `x64-windows-static-md`
+（静态库 + 动态 C 运行时，与 Swift 的 /MD 一致）。安装命令：
+
+```powershell
+vcpkg install `
+  libraw[openmp] lcms2 libjpeg-turbo libpng libtiff libheif openexr jasper libde265 x265 libdeflate `
+  libspng liblzma openjph imath zlib zstd flatbuffers `
+  --triplet x64-windows-static-md
+```
+
+**`libraw[openmp]` 那对方括号不能省。** vcpkg 的 libraw 端口 `"default-features": false`，
+不带这个 feature 编出来的是单线程库——RAW 打开会慢 3–4 倍，而且没有任何报错提示。
+引擎会因此链接 MSVC 的 OpenMP 运行时，`build.ps1` 会把 `vcomp140.dll` 一并放进发行包。
