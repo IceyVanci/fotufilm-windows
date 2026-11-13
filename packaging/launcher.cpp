@@ -24,7 +24,7 @@
 #pragma comment(lib, "cabinet.lib")
 #pragma comment(lib, "shell32.lib")
 
-#define TRAILER_MAGIC "FOTOFILM-SFX\0\0\0\0"
+#define TRAILER_MAGIC "FOTUFILM-SFX\0\0\0\0"
 #define ARCHIVE_MAGIC "FOTOARCH"
 #define FLAG_NAME "complete.flag"
 
@@ -71,7 +71,7 @@ static std::wstring Join(const std::wstring& a, const std::wstring& b) {
 }
 
 static void LogLine(const std::wstring& text) {
-  const wchar_t* path = _wgetenv(L"FOTOFILM_LAUNCH_LOG");
+  const wchar_t* path = _wgetenv(L"FOTUFILM_LAUNCH_LOG");
   if (!path || !*path) return;
   FILE* file = nullptr;
   if (_wfopen_s(&file, path, L"a, ccs=UTF-8") != 0 || !file) return;
@@ -387,7 +387,7 @@ static int Launch(const Args& args) {
   swprintf_s(hex, L"%016llx", (unsigned long long)header.payloadHash);
 
   std::vector<std::wstring> candidates;
-  const wchar_t* envDir = _wgetenv(L"FOTOFILM_RUNTIME_DIR");
+  const wchar_t* envDir = _wgetenv(L"FOTUFILM_RUNTIME_DIR");
   if (!args.runtimeDir.empty()) candidates.push_back(args.runtimeDir);
   else if (envDir && *envDir) candidates.push_back(envDir);
   else if (args.portable) candidates.push_back(Join(Join(ExeDirectory(), L"Fotufilm.runtime"), hex));

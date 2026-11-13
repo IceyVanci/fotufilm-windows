@@ -102,7 +102,7 @@ $env:PUB_CACHE = 'F:\Futo\home\AppData\Local\Pub\Cache'
 $env:FLUTTER_SUPPRESS_ANALYTICS = 'true'
 $env:DART_SUPPRESS_ANALYTICS = 'true'
 $env:HL_WINDOWS_TMP_DIR = 'F:\Futo\tmp'
-$env:FOTOFILM_AOT_DIR = $AotDir
+$env:FOTUFILM_AOT_DIR = $AotDir
 $env:HALIDE_ROOT = $HalideRoot
 $stageHeaders = Join-Path $Upstream 'Sources\FotofilmHalide'
 $newestStage = Get-ChildItem $stageHeaders -Recurse -Include '*.h','*.cpp' -File -ErrorAction SilentlyContinue |
@@ -119,9 +119,10 @@ Done
 # ---- engine ----------------------------------------------------------------------------------
 if (-not $SkipEngine) {
   Step 'swift engine'
-  # The manifest reads FOTOFILM_AOT_DIR and HALIDE_ROOT from the environment; when that read comes
-  # back empty the package silently builds without the Vulkan kernels and fails to link. The same
-  # settings are passed as flags so the engine is correct either way.
+  # The manifest reads FOTUFILM_AOT_DIR and HALIDE_ROOT from the environment (Package.swift spells
+  # them with the project's own "Fotufilm"); when that read comes back empty the package silently
+  # builds without the Vulkan kernels and fails to link. The same settings are passed as flags as
+  # well, so the engine is correct even if the manifest never sees the environment.
   $halideLib = Join-Path $env:HALIDE_ROOT 'lib\Release'
   if (-not (Test-Path $halideLib)) { $halideLib = Join-Path $env:HALIDE_ROOT 'lib' }
   $engineFlags = @()
@@ -176,7 +177,9 @@ Done
 if (-not $SkipEditor) {
   Step 'flutter editor'
   Push-Location $Flutter
-  try { & $flutterBat build windows --release --no-pub } finally { Pop-Location }
+  # --no-version-check: the tool runs `git fetch --tags` in its own SDK to look for updates,
+  # and on a machine without network that fetch retries until it times out, stalling the build.
+  try { & $flutterBat build windows --release --no-pub --no-version-check } finally { Pop-Location }
   if ($LASTEXITCODE -ne 0) { Fail ('flutter build exited ' + $LASTEXITCODE) }
   Done
 } else { Write-Host 'skipping the editor' -ForegroundColor DarkGray }

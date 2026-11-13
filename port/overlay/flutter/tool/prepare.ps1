@@ -8,8 +8,13 @@ $out = Join-Path $here "assets\generated"
 New-Item -ItemType Directory -Force (Join-Path $out "glyphs"), (Join-Path $out "fonts") | Out-Null
 
 $web = ($repo -replace "\\", "/") + "/web/src/generated/controls.js"
-$script = "import('file:///" + $web + "').then(m => process.stdout.write(JSON.stringify(m)))"
-node --input-type=module -e $script | Set-Content -Path (Join-Path $out "controls.json") -NoNewline -Encoding utf8
+# Node writes UTF-8. PowerShell 5.1 decodes a native command's stdout with the console code page
+# (GBK on a Chinese Windows), so piping it into Set-Content produced mojibake and controls.json
+# would not parse ("Unexpected character ... Click the Photo"). Node writes the file itself.
+$json = (Join-Path $out "controls.json") -replace "\\", "/"
+$script = "import('file:///" + $web + "').then(async (m) => { const fs = await import('node:fs'); fs.writeFileSync('" + $json + "', JSON.stringify(m)); })"
+node --input-type=module -e $script
+if ($LASTEXITCODE -ne 0) { throw 'controls.json was not generated' }
 Copy-Item (Join-Path $repo "web\src\material-symbols.json") $out -Force
 Copy-Item (Join-Path $repo "web\src\assets\fotufilm-wordmark.svg") $out -Force
 Copy-Item (Join-Path $repo "web\public\app-icon.png") $out -Force

@@ -41,7 +41,7 @@ F:\Futo\build.cmd -Algo lzms         更小的 exe（约 1.9x 压缩），首次
 ## 构建步骤
 
 1. **引擎** `swift build -c release --product FotufilmHost`
-   需要 `SDKROOT` 指向 Swift 的 `Windows.sdk`、`FOTOFILM_AOT_DIR` 指向 AOT 核目录（脚本已设）。
+   需要 `SDKROOT` 指向 Swift 的 `Windows.sdk`、`FOTUFILM_AOT_DIR` 指向 AOT 核目录（脚本已设）。
 2. **界面** `flutter build windows --release --no-pub`
 3. **暂存** 把 `FotufilmHost.dll` 改名为 `libfotufilm.dll`，连同 32 个 Swift 运行时 DLL 与 `data\` 复制到 `dist\app`。
 4. **打包** `packaging\bin\fotufilm-pack.exe` 把 `dist\app` 压进启动器存根，得到单文件。
@@ -53,7 +53,7 @@ exe = 启动器存根 + 压缩归档。第一次运行时解包，然后启动 `
 
 解包位置按顺序尝试，第一个能写的就是最终位置：
 
-1. `--runtime-dir <路径>` 或环境变量 `FOTOFILM_RUNTIME_DIR`
+1. `--runtime-dir <路径>` 或环境变量 `FOTUFILM_RUNTIME_DIR`
 2. `--portable` → exe 旁边的 `Fotufilm.runtime\<归档哈希>\`
 3. `%LOCALAPPDATA%\Fotufilm\runtime\<归档哈希>\`（默认）
 4. exe 旁边的 `Fotufilm.runtime\<归档哈希>\`
@@ -65,7 +65,7 @@ exe = 启动器存根 + 压缩归档。第一次运行时解包，然后启动 `
 - `--clean` 清掉旧版本留下的运行时目录。
 - `--extract-only` 只解包并打印路径，不启动。
 - 解包中途显示进度窗口；两个实例同时启动时，后一个等前一个 15 秒，仍不成就自己解包到独立临时目录再改名就位，结果一致。
-- 排查时设 `FOTOFILM_LAUNCH_LOG=<日志路径>`，启动器会写每一步的路径与 Win32 错误码。
+- 排查时设 `FOTUFILM_LAUNCH_LOG=<日志路径>`，启动器会写每一步的路径与 Win32 错误码。
 ## 压包工具
 
 `packaging\launcher.cpp` 一个源文件编出两个程序：

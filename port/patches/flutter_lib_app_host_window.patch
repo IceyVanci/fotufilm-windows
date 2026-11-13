@@ -1,0 +1,78 @@
+diff --git a/flutter/lib/app/host_window.dart b/flutter/lib/app/host_window.dart
+index a9fef30..fe0e588 100644
+--- a/flutter/lib/app/host_window.dart
++++ b/flutter/lib/app/host_window.dart
+@@ -5,6 +5,8 @@
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/services.dart';
+ 
++import 'host_windows_stub.dart' if (dart.library.io) 'host_windows.dart' as shell;
++
+ abstract final class HostWindow {
+   static const _channel = MethodChannel('fotufilm/window');
+ 
+@@ -45,22 +47,43 @@ abstract final class HostWindow {
+   /// and on Android a document in the folder the person chose.
+   static bool get showsFiles => !kIsWeb && defaultTargetPlatform != TargetPlatform.android;
+ 
++  /// The Mac app generates a sample chart; other builds have nothing to open.
++  static bool get hasSamplePhoto => _macApp;
++
++  /// The system keeps the list of recently opened files; only the Mac app's runs do.
++  static bool get hasRecentFiles => _macApp;
++
+   /// What showing a file in the system's file manager is called.
+   static String get revealLabel =>
+-      defaultTargetPlatform == TargetPlatform.macOS ? 'Show in Finder' : 'Show in Folder';
++      defaultTargetPlatform == TargetPlatform.macOS ? '在访达中显示' : '在资源管理器中显示';
+ 
+   /// Where the file manager is, for a plug-in's Show… command.
+   static String get fileManager =>
+-      defaultTargetPlatform == TargetPlatform.macOS ? 'in Finder' : 'in Folder';
++      defaultTargetPlatform == TargetPlatform.macOS ? '在访达中显示' : '在资源管理器中显示';
+ 
+-  /// Shows files in the Finder.
+-  static Future<void> reveal(List<String> paths) => _call('reveal', paths);
++  /// Whether the system's own file manager and browser are reached through the Windows host.
++  static bool get _windows => !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
++
++  /// Shows files in the Finder, or in Explorer on Windows.
++  static Future<void> reveal(List<String> paths) async {
++    if (_windows) {
++      shell.reveal(paths);
++      return;
++    }
++    await _call('reveal', paths);
++  }
+ 
+   /// Opens a file in the app the system chooses for it.
+-  static Future<bool> openFile(String path) async => await _call('openFile', path) == true;
++  static Future<bool> openFile(String path) async {
++    if (_windows) return shell.openFile(path);
++    return await _call('openFile', path) == true;
++  }
+ 
+   /// Opens a web address in the browser.
+-  static Future<bool> openUrl(String url) async => await _call('openURL', url) == true;
++  static Future<bool> openUrl(String url) async {
++    if (_windows) return shell.openUrl(url);
++    return await _call('openURL', url) == true;
++  }
+ 
+   /// File › Use Sample Photo's picture, the generated chart in the app's resources.
+   static Future<String?> samplePhoto() async => await _call('samplePhoto') as String?;
+@@ -68,9 +91,11 @@ abstract final class HostWindow {
+   /// Photographs opened from the Open panel join File › Open Recent.
+   static Future<void> noteRecent(List<String> paths) => _call('noteRecent', paths);
+ 
+-  /// Moves files to the Trash; answers the paths that went.
+-  static Future<List<String>> trash(List<String> paths) async =>
+-      ((await _call('trash', paths)) as List?)?.cast<String>() ?? const [];
++  /// Moves files to the Trash, or to the Recycle Bin on Windows; answers the paths that went.
++  static Future<List<String>> trash(List<String> paths) async {
++    if (_windows) return shell.trash(paths);
++    return ((await _call('trash', paths)) as List?)?.cast<String>() ?? const [];
++  }
+ 
+   static Future<Object?> _call(String method, [Object? arguments]) async {
+     try {

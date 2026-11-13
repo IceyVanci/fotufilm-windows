@@ -115,10 +115,14 @@ function render(text, ph, value) {
 const dartLiteral = (s) => "'" + s.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
 
 // Files the port itself authored are overlaid after the replay, so the rewriter leaves them alone.
-const overlayFile = 'F:/Futo/tools/overlay.txt';
-const overlay = new Set(fs.existsSync(overlayFile)
-  ? fs.readFileSync(overlayFile, 'utf8').split('\n').filter(Boolean)
-      .map((p) => p.replace(/^flutter\//, 'flutter/'))
+// The list lives beside this file so the replay carries it with the port layer; an older checkout
+// that has it under tools/ is still read.
+const overlayFile = [path.join(__dirname, 'overlay.txt'), 'F:/Futo/tools/overlay.txt']
+  .find((candidate) => fs.existsSync(candidate));
+const overlay = new Set(overlayFile
+  ? fs.readFileSync(overlayFile, 'utf8').split('\n').map((p) => p.trim()).filter(Boolean)
+      // rel is measured from <tree>/flutter, so an entry's leading "flutter/" is not part of it.
+      .map((p) => p.replace(/^flutter\//, ''))
   : []);
 
 function walk(d, out = []) {

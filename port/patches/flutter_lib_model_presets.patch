@@ -1,0 +1,13 @@
+diff --git a/flutter/lib/model/presets.dart b/flutter/lib/model/presets.dart
+index 6201bde..40462e1 100644
+--- a/flutter/lib/model/presets.dart
++++ b/flutter/lib/model/presets.dart
+@@ -189,7 +189,7 @@ class Presets {
+   // ── Look files ──────────────────────────────────────────────────────────────────────────
+ 
+   static const _lookTypes = [
+-    XTypeGroup(label: 'Fotufilm Look', extensions: [lookExtension]),
++    XTypeGroup(label: 'Fotufilm 风格', extensions: [lookExtension]),
+   ];
+ 
+   /// Writes presets as a look file where the save panel says.

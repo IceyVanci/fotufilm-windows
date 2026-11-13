@@ -1,0 +1,76 @@
+diff --git a/flutter/lib/model/export.dart b/flutter/lib/model/export.dart
+index 608c68b..67ac69f 100644
+--- a/flutter/lib/model/export.dart
++++ b/flutter/lib/model/export.dart
+@@ -25,11 +25,11 @@ export 'export_sizes.dart';
+ /// The still formats the desktop engine may write, in the order the dialog lists them.
+ const exportTypeLabels = {
+   'image/png': 'PNG',
+-  'image/tiff': 'TIFF · 16-bit',
++  'image/tiff': 'TIFF · 16 位',
+   'image/jpeg': 'JPEG',
+   'image/heic': 'HEIC',
+   'image/webp': 'WebP',
+-  dpxType: 'DPX · Cineon 10-bit',
++  dpxType: 'DPX · Cineon 10 位',
+ };
+ 
+ /// A Cineon Log scan's format: 10-bit printing density for grading, offered only for an edit
+@@ -41,9 +41,9 @@ const originalType = 'original';
+ 
+ /// The export sheet's names for each metadata policy.
+ const metadataLabels = {
+-  'preserve': 'Include Location',
+-  'preserveWithoutLocation': 'Capture Details',
+-  'strip': 'No Metadata',
++  'preserve': '包含位置信息',
++  'preserveWithoutLocation': '拍摄信息',
++  'strip': '无元数据',
+ };
+ 
+ const lossyTypes = {'image/jpeg', 'image/webp', 'image/heic'};
+@@ -505,7 +505,7 @@ class ExportTool {
+     };
+     _remember(batch: false);
+     return _queue(filename, [doc.handle], (engine, job) async {
+-      _report(job, 'Exporting $filename');
++      _report(job, '正在导出 $filename');
+       final (answer, name) =
+           await _written(destination, () => engine.callInBackground('export', request));
+       return SavedExport(
+@@ -554,7 +554,7 @@ class ExportTool {
+         _report(
+             job,
+             name is String
+-                ? 'Exporting $name · $current of $total'
++                ? '正在导出 $name · $current / $total'
+                 : 'Exported ${progress['done']} of $total',
+             written > developing ? written : developing);
+       }));
+@@ -610,7 +610,7 @@ class ExportTool {
+         'path': destination.path,
+       }, (progress) {
+         _setStatus(progress['finalizing'] == true
+-            ? 'Finalizing video file'
++            ? '正在完成视频文件'
+             : 'Exporting video · ${(((progress['progress'] as num?) ?? 0) * 100).floor()}% · '
+                 '${progress['frames']} frames');
+       }));
+@@ -629,7 +629,7 @@ class ExportTool {
+     if (destination == null) return null;
+     final name = doc.name, handle = doc.handle;
+     return _queue(name, [handle], (engine, job) async {
+-      _report(job, 'Copying the original');
++      _report(job, '正在复制原始文件');
+       final (answer, saved) = await _written(
+           destination,
+           () => engine.callInBackground('exportOriginal',
+@@ -678,7 +678,7 @@ class ExportTool {
+     if (doc == null || engine == null || !canCopy || editor.exporting) return;
+     editor
+       ..error = null
+-      ..status = 'Copying the photo';
++      ..status = '正在复制照片';
+     editor.renderer?.holdCancel = true;
+     editor.notify();
+     try {

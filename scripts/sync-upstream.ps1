@@ -24,20 +24,32 @@ $Work = Join-Path $WorkRoot ($Tag -replace '^v', '')
 function Say($m) { Write-Host ('  ' + $m) }
 function Step($m) { Write-Host ''; Write-Host ('=== ' + $m + ' ===') -ForegroundColor Cyan }
 
+# PowerShell 5.1 turns a native command's stderr into a terminating error whenever
+# ErrorActionPreference is 'Stop' — even when the command succeeded, because git prints
+# "HEAD is now at …" and "Note: switching to …" on stderr. Every native call in this script is
+# judged by $LASTEXITCODE instead, so it runs with the preference relaxed; the streams are merged
+# so nothing is lost either way.
+function Invoke-Native([scriptblock]$Command) {
+  $preference = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try { & $Command 2>&1 | ForEach-Object { "$_" } }
+  finally { $ErrorActionPreference = $preference }
+}
+
 # ---- 1. the upstream checkout ----------------------------------------------------------------
 Step 'upstream'
 New-Item -ItemType Directory -Force (Split-Path -Parent $Vendor) | Out-Null
 if (-not (Test-Path (Join-Path $Vendor '.git'))) {
   Say "cloning $Repo"
-  git clone --filter=blob:none --no-checkout "https://github.com/$Repo.git" $Vendor
+  $null = Invoke-Native { git clone --filter=blob:none --no-checkout "https://github.com/$Repo.git" $Vendor }
   if ($LASTEXITCODE -ne 0) { throw 'clone failed' }
 } else {
-  git -C $Vendor fetch --tags --force origin
+  $null = Invoke-Native { git -C $Vendor fetch --tags --force origin }
   if ($LASTEXITCODE -ne 0) { throw 'fetch failed' }
 }
-git -C $Vendor checkout --force "tags/$Tag"
+$null = Invoke-Native { git -C $Vendor checkout --force "tags/$Tag" }
 if ($LASTEXITCODE -ne 0) { throw "no tag $Tag" }
-$commit = (git -C $Vendor rev-parse --short=8 HEAD).Trim()
+$commit = ((Invoke-Native { git -C $Vendor rev-parse --short=8 HEAD }) -join '').Trim()
 Say "$Tag = $commit"
 
 # ---- 2. a clean work tree ---------------------------------------------------------------------
@@ -48,9 +60,15 @@ if (Test-Path $Work) {
 }
 if (-not $DryRun) {
   New-Item -ItemType Directory -Force $Work | Out-Null
-  # archive rather than copy: it never drags .git along
-  git -C $Vendor archive --format=tar "tags/$Tag" | tar -xf - -C $Work
+  # Archive rather than copy: it never drags .git along. It is written to a file first, because
+  # PowerShell 5.1 decodes a native command's stdout on its way through a pipeline, and a 40 MB
+  # tar handed to tar.exe that way arrives corrupt ("Damaged tar archive", empty work tree).
+  $archive = Join-Path ([System.IO.Path]::GetTempPath()) ("fotufilm-$Tag.tar")
+  $null = Invoke-Native { git -C $Vendor archive --format=tar -o $archive "tags/$Tag" }
+  if ($LASTEXITCODE -ne 0) { throw 'archive failed' }
+  $null = Invoke-Native { tar -xf $archive -C $Work }
   if ($LASTEXITCODE -ne 0) { throw 'extract failed' }
+  Remove-Item $archive -Force -ErrorAction SilentlyContinue
   Say "extracted to $Work"
 }
 
@@ -73,16 +91,23 @@ Say "$n files"
 
 # ---- 4. patches -------------------------------------------------------------------------------
 Step 'patches'
+# The work tree sits inside this repository, so git discovers this repository from it and resolves
+# the patch paths against *this* root, where none of them exist — and rather than failing, git
+# reports "Skipped patch" and exits 0. A ceiling stops the search above the work tree, so the
+# patches apply to the work tree itself, as they do when it is unpacked outside any repository.
+$previousCeiling = $env:GIT_CEILING_DIRECTORIES
+$env:GIT_CEILING_DIRECTORIES = $Root
 $failed = @()
 Get-ChildItem (Join-Path $Root 'port\patches') -Filter '*.patch' | Sort-Object Name | ForEach-Object {
   if ($DryRun) {
-    git -C $Work apply --check $_.FullName 2>$null
+    $null = Invoke-Native { git -C $Work apply --check $_.FullName }
     if ($LASTEXITCODE -ne 0) { $failed += $_.Name }
   } else {
-    git -C $Work apply --whitespace=nowarn $_.FullName
+    $null = Invoke-Native { git -C $Work apply --whitespace=nowarn $_.FullName }
     if ($LASTEXITCODE -ne 0) { $failed += $_.Name }
   }
 }
+$env:GIT_CEILING_DIRECTORIES = $previousCeiling
 if ($failed.Count) {
   Write-Host ''
   Write-Host ('patches that no longer apply: ' + $failed.Count) -ForegroundColor Yellow

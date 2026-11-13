@@ -5,7 +5,7 @@ New-Item -ItemType Directory -Force $Dir | Out-Null
 $exeItem = Get-Item $Exe
 'package : ' + $exeItem.Name + '  ' + [math]::Round($exeItem.Length/1MB,1) + ' MB'
 $log = Join-Path $Dir 'launch.log'
-$env:FOTOFILM_LAUNCH_LOG = $log
+$env:FOTUFILM_LAUNCH_LOG = $log
 $p = Start-Process -FilePath $Exe -ArgumentList '--extract-only','--runtime-dir',$Dir -PassThru -Wait
 'extract : exit ' + $p.ExitCode
 $files = Get-ChildItem $Dir -Recurse -File

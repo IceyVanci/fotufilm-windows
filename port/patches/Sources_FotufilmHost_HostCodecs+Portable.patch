@@ -25,9 +25,9 @@ index 4dbfe90..c924822 100644
  
      private static func working(_ url: URL) throws -> HostImage? {
 -        guard let raw = try rawScene(url, longEdge: workingLongEdge) else { return nil }
-+        // The editor's working edge, unless FOTOFILM_RAW_WORKING_EDGE overrides it: 0 decodes the
++        // The editor's working edge, unless FOTUFILM_RAW_WORKING_EDGE overrides it: 0 decodes the
 +        // file at its own size, which is what a desktop host did before this path existed.
-+        let edge = ProcessInfo.processInfo.environment["FOTOFILM_RAW_WORKING_EDGE"]
++        let edge = ProcessInfo.processInfo.environment["FOTUFILM_RAW_WORKING_EDGE"]
 +            .flatMap { Int($0) } ?? workingLongEdge
 +        guard let raw = try rawScene(url, longEdge: edge) else { return nil }
          let scene = raw.decoded

@@ -1,18 +1,18 @@
 # The upstream this port carries. Written by scripts/sync-upstream.ps1 when a sync lands.
 upstream = "DhaliwalX/fotufilm-engine"
-upstream_tag = "v1.15"
-upstream_commit = "bcc776d9"
+upstream_tag = "v1.16"
+upstream_commit = "1d8ce722"
 upstream_version_env = "MARKETING_VERSION=1.14 / CURRENT_PROJECT_VERSION=1024"
 
 # The tag is the authority, not version.env: upstream went to 1.15 without bumping it, so a port
 # that read the file would number its release 1.14.
-upstream_release = "1.15"
+upstream_release = "1.16"
 
 # The port's own version: upstream release, then .0-w<revision>.
-port_version = "1.15.0"
-port_revision = "3"
-port_release = "1.15.0-w3"
-port_release_date = "2026-11-09"
+port_version = "1.16.0"
+port_revision = "1"
+port_release = "1.16.0-w1"
+port_release_date = "2026-11-13"
 
 # What built it.
 swift = "6.2 (Windows), x86_64"

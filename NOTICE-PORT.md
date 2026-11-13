@@ -9,13 +9,15 @@
 
 | 项 | 值 |
 |---|---|
-| 上游 | `DhaliwalX/fotufilm-engine` tag **v1.15**，commit `bcc776d9`（用 tag 标定：上游 `version.env` 在 v1.15 里仍是 `MARKETING_VERSION=1.14`，未随发布更新） |
-| 移植版本 | `1.15.0-w1` |
+| 上游 | `DhaliwalX/fotufilm-engine` tag **v1.16**，commit `1d8ce722`（用 tag 标定：上游 `version.env` 到 v1.16 仍是 `MARKETING_VERSION=1.14`，未随发布更新） |
+| 移植版本 | `1.16.0-w1` |
 | 工具链 | Swift 6.2（Windows）、Flutter 3.41.7、MSVC 14.50、Windows SDK 10.0.26100 |
 
 ## 规模
 
-相对 v1.15：**修改 116 个文件、新增 28 个文件**（另有 `.dart_tool`、`.idea`、`flutter/assets/generated` 等构建期产物，不计入）。
+相对 v1.16：移植层由 **105 个 overlay 文件**（整文件替换或新增）与 **35 个补丁**（对上游文件的定点改动）构成（另有 `.dart_tool`、`flutter/assets/generated` 等构建期产物，不计入）。
+
+> 1.16 同步时按 `port/README.md` 规矩② 把 9 个上游改过的文件从 overlay 移出：8 个交回汉化重写器重新生成，1 个（`host_window.dart`）连同 Windows 宿主通道一起改为补丁；另有 10 处重写器够不到的字符串单独成为补丁。
 
 本仓库不复制上游代码：改动以 `port/overlay/`（新增与原样保留的文件）与 `port/patches/`（补丁）两种形式保存。
 
@@ -119,7 +121,7 @@
   原来的静态库一个线程跑去马赛克。改为 `libraw[openmp]:x64-windows-static-md` 后引擎链接 MSVC 的
   OpenMP 运行时，发行包随附 `vcomp140.dll`（208 KB，取自工具链的 VC++ 可再发行目录）。
 - **RAW 先解工作副本**。`PortableImageDecoder` 原本只在 Android 上走 `working()`，现在 Windows 同样：
-  先按长边 2560 解一份，全尺寸解码留给导出与放大（`decodeLarger`）。`FOTOFILM_RAW_WORKING_EDGE`
+  先按长边 2560 解一份，全尺寸解码留给导出与放大（`decodeLarger`）。`FOTUFILM_RAW_WORKING_EDGE`
   可覆盖这个边长，`0` 表示按原尺寸解码。
 - **放宽半尺寸阈值**。`half_size` 原来要求请求边长不超过原生的 1/4，现在 1/2 —— 2560 的预览请求
   在 6024 px 的机器上因此能用四分之一像素的去马赛克，再由既有的缩小步骤降到请求尺寸。

@@ -1,0 +1,13 @@
+diff --git a/flutter/lib/ui/workspace/saved_export_notice.dart b/flutter/lib/ui/workspace/saved_export_notice.dart
+index 55f8fdb..c571293 100644
+--- a/flutter/lib/ui/workspace/saved_export_notice.dart
++++ b/flutter/lib/ui/workspace/saved_export_notice.dart
+@@ -38,7 +38,7 @@ class SavedExportNotice extends StatelessWidget {
+   Widget _saved(BuildContext context, SavedExport saved) => Center(
+         child: _card(Row(mainAxisSize: MainAxisSize.min, children: [
+             Flexible(
+-                child: Text('Saved ${saved.filename}',
++                child: Text('已保存 ${saved.filename}',
+                     maxLines: 1,
+                     overflow: TextOverflow.ellipsis,
+                     style: editorText(context, color: const Color(0xFFFFFFFF)))),

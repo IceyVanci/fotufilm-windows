@@ -1,0 +1,13 @@
+diff --git a/flutter/lib/model/photo_library.dart b/flutter/lib/model/photo_library.dart
+index aa73dfd..a2bcad0 100644
+--- a/flutter/lib/model/photo_library.dart
++++ b/flutter/lib/model/photo_library.dart
+@@ -213,7 +213,7 @@ class PhotoLibrary extends ChangeNotifier {
+   String? addFolder(String path, {bool negative = false}) {
+     final normal = path.length > 1 && path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+     if (!isFolder(normal)) {
+-      _set(() => error = 'The folder could not be opened.');
++      _set(() => error = '无法打开该文件夹。');
+       return null;
+     }
+     final existing = folders.where((f) => f.path == normal).firstOrNull;

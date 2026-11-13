@@ -1,17 +1,17 @@
 diff --git a/flutter/lib/ui/phone/phone_editor.dart b/flutter/lib/ui/phone/phone_editor.dart
-index 014007f..ff52092 100644
+index 5786d37..8f6deca 100644
 --- a/flutter/lib/ui/phone/phone_editor.dart
 +++ b/flutter/lib/ui/phone/phone_editor.dart
-@@ -136,7 +136,7 @@ class _TopBar extends StatelessWidget {
-           Builder(
-             builder: (anchor) => RoundButton(
-               glyph: 'fotu.ui.add',
--              label: 'Add media',
-+              label: '添加媒体',
-               onPressed: exporting
-                   ? null
-                   : () => showImportMenu(anchor, editor, commands.actions.open),
-@@ -147,7 +147,7 @@ class _TopBar extends StatelessWidget {
+@@ -144,7 +144,7 @@ class _TopBar extends StatelessWidget {
+             Builder(
+               builder: (anchor) => RoundButton(
+                 glyph: 'fotu.ui.add',
+-                label: 'Add media',
++                label: '添加媒体',
+                 onPressed: exporting
+                     ? null
+                     : () => showImportMenu(anchor, editor, commands.actions.open),
+@@ -155,7 +155,7 @@ class _TopBar extends StatelessWidget {
              const SizedBox(width: 6),
              RoundButton(
                glyph: 'fotu.ui.photos',
@@ -20,7 +20,7 @@ index 014007f..ff52092 100644
                onPressed: exporting ? null : editor.library.toggle,
              ),
            ],
-@@ -161,7 +161,7 @@ class _TopBar extends StatelessWidget {
+@@ -169,7 +169,7 @@ class _TopBar extends StatelessWidget {
              key: moreOptionsKey,
              builder: (anchor) => RoundButton(
                glyph: 'fotu.ui.more',
@@ -29,7 +29,7 @@ index 014007f..ff52092 100644
                opensMenu: true,
                onPressed: () => showMoreOptions(anchor, commands),
              ),
-@@ -319,7 +319,7 @@ class _Tabs extends StatelessWidget {
+@@ -327,7 +327,7 @@ class _Tabs extends StatelessWidget {
              child: Padding(
                padding: const EdgeInsets.symmetric(horizontal: 14),
                child: Center(

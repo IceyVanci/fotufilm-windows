@@ -1,19 +1,19 @@
 diff --git a/flutter/lib/app/workspace.dart b/flutter/lib/app/workspace.dart
-index 9ce5fda..04bb282 100644
+index bf844c4..dcbdaed 100644
 --- a/flutter/lib/app/workspace.dart
 +++ b/flutter/lib/app/workspace.dart
-@@ -140,8 +140,8 @@ class _WorkspaceState extends State<Workspace> {
-   Future<void> _open() async {
+@@ -157,8 +157,8 @@ class _WorkspaceState extends State<Workspace> {
      if (!editor.ready) return;
+     // A phone's gallery opens one photograph at a time: its editor has no strip of the others.
      final files = await chooseFiles([
 -      fileType('Images', imageExtensions),
 -      fileType('Videos', videoExtensions),
 +      fileType('图片', imageExtensions),
 +      fileType('视频', videoExtensions),
-     ]);
+     ], single: editor.gallery.available);
      if (!kIsWeb && files.isNotEmpty) HostWindow.noteRecent([for (final f in files) f.path]);
      // One file brings its folder into the strip.
-@@ -283,7 +283,7 @@ class _WorkspaceState extends State<Workspace> {
+@@ -341,7 +341,7 @@ class _WorkspaceState extends State<Workspace> {
            bottom: 0,
            width: hit,
            child: _Resizer(
@@ -22,7 +22,7 @@ index 9ce5fda..04bb282 100644
              onDrag: (dx) => layout.setWidth(PanelSide.film, layout.widths.film + dx),
              onEnd: layout.keepWidths,
              onReset: () => layout.setWidth(PanelSide.film, Metrics.filmWidth, keep: true),
-@@ -296,7 +296,7 @@ class _WorkspaceState extends State<Workspace> {
+@@ -354,7 +354,7 @@ class _WorkspaceState extends State<Workspace> {
            bottom: 0,
            width: hit,
            child: _Resizer(
@@ -31,7 +31,7 @@ index 9ce5fda..04bb282 100644
              onDrag: (dx) =>
                  layout.setWidth(PanelSide.inspector, layout.widths.inspector - dx),
              onEnd: layout.keepWidths,
-@@ -409,7 +409,7 @@ class _DockGrabber extends StatelessWidget {
+@@ -467,7 +467,7 @@ class _DockGrabber extends StatelessWidget {
    @override
    Widget build(BuildContext context) => Semantics(
          button: true,
