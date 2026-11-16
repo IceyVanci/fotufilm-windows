@@ -1,8 +1,8 @@
 diff --git a/flutter/lib/ui/inspector/expose_panel.dart b/flutter/lib/ui/inspector/expose_panel.dart
-index bd2d9f2..703b0f3 100644
+index e2da534..5d49505 100644
 --- a/flutter/lib/ui/inspector/expose_panel.dart
 +++ b/flutter/lib/ui/inspector/expose_panel.dart
-@@ -40,11 +40,11 @@ List<Widget> exposePanel(InspectorControls c) {
+@@ -41,11 +41,11 @@ List<Widget> exposePanel(InspectorControls c) {
  
  Section lightSection(InspectorControls c) {
    final negative = printsNegative(c.edit);
@@ -16,7 +16,7 @@ index bd2d9f2..703b0f3 100644
          detail: c.catalogue.detail('localTone'),
          value: c.edit['localTone'] == true,
          onChanged: (v) => c.editor.change({'localTone': v}),
-@@ -56,7 +56,7 @@ Section lightSection(InspectorControls c) {
+@@ -57,7 +57,7 @@ Section lightSection(InspectorControls c) {
  Section? sourceIlluminantSection(InspectorControls c) {
    if (printsNegative(c.edit)) return null;
    final sceneLight = c.catalogue.control('sceneLight');
@@ -25,12 +25,15 @@ index bd2d9f2..703b0f3 100644
      PickerField<String>(
        label: sceneLight['title'] as String,
        detail: sceneLight['detail'] as String?,
-@@ -72,23 +72,23 @@ Section? sourceIlluminantSection(InspectorControls c) {
+@@ -73,26 +73,26 @@ Section? sourceIlluminantSection(InspectorControls c) {
  }
  
- Section whiteBalanceSection(InspectorControls c) =>
--    Section(title: 'White Balance', children: c.sliders('White Balance'));
-+    Section(title: '白平衡', children: c.sliders('White Balance'));
+ /// The light's white balance, under what a scanned negative's frame is balanced on.
+-Section whiteBalanceSection(InspectorControls c) => Section(title: 'White Balance', children: [
++Section whiteBalanceSection(InspectorControls c) => Section(title: '白平衡', children: [
+       ...negativeBalanceControls(c),
+       ...c.sliders('White Balance'),
+     ]);
  
 -Section colorSection(InspectorControls c) => Section(title: 'Color', children: c.sliders('Color'));
 +Section colorSection(InspectorControls c) => Section(title: '颜色', children: c.sliders('Color'));
@@ -54,7 +57,7 @@ index bd2d9f2..703b0f3 100644
          variant: ButtonVariant.negative,
          onPressed: graded
              ? () => editor.change({
-@@ -103,14 +103,14 @@ Section gradeSection(InspectorControls c) {
+@@ -107,14 +107,14 @@ Section gradeSection(InspectorControls c) {
  /// The film's long exposure, for a film that has one.
  Section? longExposureSection(InspectorControls c) =>
      !printsNegative(c.edit) && c.available.contains('shutter')

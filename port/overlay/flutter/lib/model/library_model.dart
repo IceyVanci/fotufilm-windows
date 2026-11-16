@@ -31,6 +31,19 @@ String? libraryMediaKind(String name) {
 typedef FileRow = (String path, int size, int modified);
 
 /// A photo in a library folder.
+/// The last segment of a path, whichever separator it uses: a library row's path is relative and
+/// joined with '/', while a picked folder's is whatever the platform prints.
+String pathName(String path) {
+  final cut = path.lastIndexOf(RegExp(r'[\\/]'));
+  return cut < 0 ? path : path.substring(cut + 1);
+}
+
+/// Everything before the last separator of a path, or '' when it has none.
+String pathParent(String path) {
+  final cut = path.lastIndexOf(RegExp(r'[\\/]'));
+  return cut < 0 ? '' : path.substring(0, cut);
+}
+
 class LibraryPhoto {
   LibraryPhoto({
     required this.folderId,
@@ -39,7 +52,7 @@ class LibraryPhoto {
     required this.size,
     required this.modified,
     this.negative = false,
-  })  : name = path.substring(path.lastIndexOf('/') + 1),
+  })  : name = pathName(path),
         key = photoKey(folderId, path) {
     // "Photo.jpg" before "Photo 2.jpg", and a raw beside its JPEG.
     final dot = name.lastIndexOf('.');
@@ -64,7 +77,7 @@ class LibraryPhoto {
   String get file => '$root/$path';
 
   /// The directory it sits in within its folder: '' at the folder's top (`photoDirectory`).
-  String get directory => path.substring(0, path.lastIndexOf('/').clamp(0, path.length));
+  String get directory => pathParent(path);
 
   LibraryPhoto withNegative(bool value) => LibraryPhoto(
       folderId: folderId, root: root, path: path, size: size, modified: modified, negative: value);
@@ -238,8 +251,7 @@ String? nameProblem(String name) {
 /// The strip's files for `path` among `rows`, its folder's files, in the library's name order: the
 /// folder's paths, or `path` alone when it is not among them.
 List<String> folderItems(String path, List<FileRow> rows) {
-  final slash = path.lastIndexOf('/');
-  final folder = path.substring(0, slash), name = path.substring(slash + 1);
+  final folder = pathParent(path), name = pathName(path);
   final entries = [
     for (final (file, size, modified) in rows)
       LibraryPhoto(folderId: 'opened', root: folder, path: file, size: size, modified: modified),

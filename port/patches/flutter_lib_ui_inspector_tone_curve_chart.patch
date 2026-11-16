@@ -1,10 +1,10 @@
 diff --git a/flutter/lib/ui/inspector/tone_curve_chart.dart b/flutter/lib/ui/inspector/tone_curve_chart.dart
-index a74d0f2..219496a 100644
+index b2351c7..d084cb2 100644
 --- a/flutter/lib/ui/inspector/tone_curve_chart.dart
 +++ b/flutter/lib/ui/inspector/tone_curve_chart.dart
-@@ -27,7 +27,7 @@ class ToneCurveChart extends StatelessWidget {
+@@ -65,7 +65,7 @@ class _ToneCurveChartState extends State<ToneCurveChart> {
            return Padding(
-             padding: padding,
+             padding: widget.padding,
              child: Semantics(
 -              label: 'Tone curve',
 +              label: '色调曲线',

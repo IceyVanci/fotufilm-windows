@@ -104,6 +104,7 @@ _Kind _stepKind(Json? before, Json? after) {
     }
     if (_changed(before, after, const ['medium'])) return '输出介质';
     if (_profileChanged(before, after, (f) => f == 'printLight')) return '观片光源';
+    if (_profileChanged(before, after, (f) => f == 'printSurface')) return '相纸表面';
     if (_changed(before, after, const ['digitalReference'])) return '屏幕转换';
     if (_profileChanged(before, after, (f) => f == 'screenGrade')) return '相纸号数';
     if (_profileChanged(before, after, _bands.hasMatch)) return '接收波段';

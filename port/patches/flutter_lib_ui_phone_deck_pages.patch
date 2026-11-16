@@ -1,8 +1,8 @@
 diff --git a/flutter/lib/ui/phone/deck_pages.dart b/flutter/lib/ui/phone/deck_pages.dart
-index 689ba7a..c028b48 100644
+index 6bc2fde..f020400 100644
 --- a/flutter/lib/ui/phone/deck_pages.dart
 +++ b/flutter/lib/ui/phone/deck_pages.dart
-@@ -42,7 +42,7 @@ List<Widget> deckPage(DeckPage page, InspectorControls c) => switch (page) {
+@@ -45,7 +45,7 @@ List<Widget> deckPage(DeckPage page, InspectorControls c) => switch (page) {
            ToneCurveChart(editor: c.editor),
            ...printOutputControls(c),
            // The engine develops in Display P3, the space the canvas shows in.

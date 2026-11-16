@@ -23,6 +23,8 @@ param(
   [string]$Version = '',
   [string]$AotDir = 'F:\Futo\m0\aot-windows',
   [string]$HalideRoot = 'F:\Futo\toolchain\halide-build',
+  # The Flutter SDK to build the editor with. 1.17 needs 3.50 (Dart 3.14, material_ui).
+  [string]$FlutterBat = 'F:\Futo\toolchain\sdks\flutter-3.50\bin\flutter.bat',
   [string]$Revision = '1'
 )
 $ErrorActionPreference = 'Stop'
@@ -80,7 +82,7 @@ Step 'toolchain'
 $swiftRoot = 'F:\Futo\toolchain\swift'
 $swiftBin  = Join-Path $swiftRoot 'LocalApp\Programs\Swift\Toolchains\6.2.0+Asserts\usr\bin'
 $swiftSdk  = Join-Path $swiftRoot 'LocalApp\Programs\Swift\Platforms\6.2.0\Windows.platform\Developer\SDKs\Windows.sdk'
-$flutterBat = 'F:\Futo\toolchain\sdks\flutter\bin\flutter.bat'
+$flutterBat = $FlutterBat
 $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
 foreach ($p in @($swiftBin, $swiftSdk, $flutterBat, $vswhere, $AotDir, $Upstream)) {
   if (-not (Test-Path $p)) { Fail "missing $p" }

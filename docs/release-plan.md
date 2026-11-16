@@ -63,7 +63,7 @@ F:\Futo\fotufilm-windows\        ← 发布目录 = 仓库根目录，几百个�
 没有 fork 徽章，社区第一眼靠 README 判断。三处都要写：
 
 **① README 首屏**（中英各一段）
-- 一句话定位："Fotufilm（https://fotufilm.com）的非官方 Windows 移植，含简体中文界面。"
+- 一句话定位："Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，含简体中文界面。"
 - "Not affiliated with, endorsed by, or sponsored by MUAStudio Inc."
 - 跟随的上游版本、最近同步日期
 - 两条链接：`NOTICE-PORT.md`（改了什么）、`docs/upstream-sync.md`（怎么跟版本）
@@ -154,7 +154,7 @@ MSIX 排除（强制签名，与"不签名"冲突）。两份产物共用同一�
 这两处由 `lib/app/build_info.dart` 驱动，构建时由 `build.ps1` 现场写入
 （版本取 `upstream/version.env`，修订号取 `port-version.txt`）。
 
-发布暂存区的规则写在 [release/README.md](../release/README.md)：只复制源码与脚本，不复制任何
+发布暂存区的规则：只复制源码与脚本，不复制任何
 构建缓存与生成物，标准是"别人 clone 后能按文档产出一模一样的 exe"。
 
 ## 9. 风险

@@ -24,12 +24,24 @@ Future<void> forgetFolder(String folder) async {}
 Future<List<FileRow>> listFolder(String folder, {bool recursive = true}) =>
     Isolate.run(() => _list(folder, recursive));
 
+/// The last segment of a path, whichever separator the platform uses: `dart:io` answers
+/// backslashes on Windows, so a literal '/' search would keep the whole absolute path.
+String _parentOf(String path) {
+  final cut = path.lastIndexOf(RegExp(r'[\\/]'));
+  return cut < 0 ? '.' : path.substring(0, cut);
+}
+
+String _baseName(String path) {
+  final cut = path.lastIndexOf(RegExp(r'[\\/]'));
+  return cut < 0 ? path : path.substring(cut + 1);
+}
+
 List<FileRow> _list(String folder, bool recursive) {
   final root = Directory(folder);
   final rows = <FileRow>[];
   void walk(Directory directory, String prefix) {
     for (final entry in directory.listSync(followLinks: false)) {
-      final name = entry.path.substring(entry.path.lastIndexOf('/') + 1);
+      final name = _baseName(entry.path);
       if (name.isEmpty || name.startsWith('.')) continue;
       final path = prefix.isEmpty ? name : '$prefix/$name';
       // A link counts as what it points to, as the host's walk follows links to files.
@@ -67,7 +79,7 @@ String renameFile(String path, String name) {
       RegExp(r'[/\\:\n\x00]').hasMatch(name)) {
     throw const FileSystemException('Use a name without “/” or “:” that does not start with a dot.');
   }
-  final to = '${path.substring(0, path.lastIndexOf('/'))}/$name';
+  final to = '${_parentOf(path)}/$name';
   // A change of case only is the same file on a case-insensitive volume.
   if (FileSystemEntity.typeSync(to, followLinks: false) != FileSystemEntityType.notFound &&
       !FileSystemEntity.identicalSync(path, to)) {

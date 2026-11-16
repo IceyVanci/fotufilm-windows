@@ -9,15 +9,15 @@
 
 | 项 | 值 |
 |---|---|
-| 上游 | `DhaliwalX/fotufilm-engine` tag **v1.16**，commit `1d8ce722`（用 tag 标定：上游 `version.env` 到 v1.16 仍是 `MARKETING_VERSION=1.14`，未随发布更新） |
-| 移植版本 | `1.16.0-w1` |
-| 工具链 | Swift 6.2（Windows）、Flutter 3.41.7、MSVC 14.50、Windows SDK 10.0.26100 |
+| 上游 | `DhaliwalX/fotufilm-engine` tag **v1.17**，commit `87a3f46`（用 tag 标定：上游 `version.env` 到 v1.17 仍是 `MARKETING_VERSION=1.14`，未随发布更新） |
+| 移植版本 | `1.17.0-w1` |
+| 工具链 | Swift 6.2（Windows）、Flutter 3.50.0（Dart 3.14.0）、Halide 22.0.0、MSVC 14.50、Windows SDK 10.0.26100 |
 
 ## 规模
 
-相对 v1.16：移植层由 **105 个 overlay 文件**（整文件替换或新增）与 **35 个补丁**（对上游文件的定点改动）构成（另有 `.dart_tool`、`flutter/assets/generated` 等构建期产物，不计入）。
+相对 v1.17：移植层由 **105 个 overlay 文件**（整文件替换或新增）与 **35 个补丁**（对上游文件的定点改动）构成（另有 `.dart_tool`、`flutter/assets/generated` 等构建期产物，不计入）。
 
-> 1.16 同步时按 `port/README.md` 规矩② 把 9 个上游改过的文件从 overlay 移出：8 个交回汉化重写器重新生成，1 个（`host_window.dart`）连同 Windows 宿主通道一起改为补丁；另有 10 处重写器够不到的字符串单独成为补丁。
+> 1.17 同步时上游改到了 18 个 overlay 文件与 13 个补丁目标（含 `Pipeline/Gpu.h` 的 +103/−26 与 `negative_panel.dart` 的 +252/−13）。这些文件全部以三方合并的方式吸收上游改动后留在原层，没有再移出 overlay；`negative_panel` 等补丁因上游结构与新增中文文案而重建。
 
 本仓库不复制上游代码：改动以 `port/overlay/`（新增与原样保留的文件）与 `port/patches/`（补丁）两种形式保存。
 
@@ -84,8 +84,9 @@
 
 ## 五、其它
 
-- `flutter/pubspec.yaml`：版本号改为 `1.15.0+1`
-- `flutter/.metadata`：Windows 平台登记
+- `flutter/pubspec.yaml`：版本号 `1.17.0+1`，环境约束随上游升到 `sdk: ^3.14.0` / `flutter: "3.50.0"` 以上，并加入 `material_ui`
+- `flutter/.metadata`：Windows 平台登记；revision 随 3.50.0 更新为 `ab291203`
+- `flutter/windows/runner/utils.cpp`：随 Flutter 3.50 模板换成有界版本（CWE-126：`wcsnlen` + `UNICODE_STRING_MAX_CHARS`）
 - `flutter/lib/engine/fotufilm_ffi.dart`：Windows 下的 DLL 文件名（`libfotufilm.dll`）
 
 ## 六、相对 1.14.0-w1 的变化
@@ -109,7 +110,7 @@
 
 - 本移植新增/修改的代码：**Apache-2.0**
 - 上游代码：**Apache-2.0**，版权归 MUAStudio Inc.
-- 47 个胶片配置与编辑器字形：**CC BY-SA 4.0**，版权归 MUAStudio Inc.，**原样分发，未修改**；署名 Fotufilm（https://fotufilm.com）
+- 47 个胶片配置与编辑器字形：**CC BY-SA 4.0**，版权归 MUAStudio Inc.，**原样分发，未修改**；署名 Fotufilm（[fotufilm.com](https://fotufilm.com)）
 
 完整条款见 `LICENSE`、`NOTICE`、`LICENSING.md`、`THIRD_PARTY_NOTICES.md` 与 `licenses/`。
 

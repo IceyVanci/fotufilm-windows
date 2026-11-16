@@ -1,5 +1,5 @@
 diff --git a/flutter/lib/ui/phone/phone_editor.dart b/flutter/lib/ui/phone/phone_editor.dart
-index 5786d37..8f6deca 100644
+index 4e037c5..c5ec7b0 100644
 --- a/flutter/lib/ui/phone/phone_editor.dart
 +++ b/flutter/lib/ui/phone/phone_editor.dart
 @@ -144,7 +144,7 @@ class _TopBar extends StatelessWidget {

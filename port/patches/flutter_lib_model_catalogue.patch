@@ -1,5 +1,5 @@
 diff --git a/flutter/lib/model/catalogue.dart b/flutter/lib/model/catalogue.dart
-index 3d3ba58..c4cdd3f 100644
+index 44ed476..b21e183 100644
 --- a/flutter/lib/model/catalogue.dart
 +++ b/flutter/lib/model/catalogue.dart
 @@ -6,6 +6,8 @@ import 'dart:convert';
@@ -34,7 +34,7 @@ index 3d3ba58..c4cdd3f 100644
  
    String? detail(String field) {
      for (final c in controls) {
-@@ -86,21 +91,21 @@ class Catalogue {
+@@ -86,25 +91,30 @@ class Catalogue {
    late final List<SliderSpec> sliders = [
      catalogueSlider('cameraPreflash', 'Light', 0.005),
      catalogueSlider('sceneLightKelvin', 'Source Illuminant', 1),
@@ -61,9 +61,20 @@ index 3d3ba58..c4cdd3f 100644
 -    SliderSpec(key: 'grain', label: 'Grain', min: 0, max: 2, step: .01, def: 1, unit: '×',
 +    SliderSpec(key: 'grain', label: '颗粒', min: 0, max: 2, step: .01, def: 1, unit: '×',
          group: 'Character', detail: detail('grain')),
++    // The key keeps the English band and axis names the engine reads; only the label is Chinese.
      for (final band in const ['Shadows', 'Midtones', 'Highlights'])
-       for (final axis in const ['Warmth', 'Tint', 'Level'])
-@@ -137,12 +142,15 @@ class Catalogue {
+-      for (final axis in const ['Warmth', 'Tint', 'Level'])
+-        SliderSpec(key: 'grade$band$axis', label: axis, min: -1, max: 1, step: .01, def: 0,
++      for (final (axis, label) in const [
++        ('Warmth', '暖度'),
++        ('Tint', '色调'),
++        ('Level', '亮度'),
++      ])
++        SliderSpec(key: 'grade$band$axis', label: label, min: -1, max: 1, step: .01, def: 0,
+             group: band),
+     catalogueSlider('blackPoint', 'Output Levels', 0.005),
+     catalogueSlider('whitePoint', 'Output Levels', 0.005),
+@@ -137,12 +147,15 @@ class Catalogue {
    static Json profileControl(Json c, Json edit, Json? stock) {
      final medium = profileMedium(edit, stock);
      final profile = stock?['profile'] as Map?;

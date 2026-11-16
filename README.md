@@ -1,6 +1,6 @@
 # Fotufilm for Windows (unofficial)
 
-Fotufilm（https://fotufilm.com）的非官方 Windows 移植，附带简体中文界面。
+Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，附带简体中文界面。
 
 > **Not affiliated with, endorsed by, or sponsored by MUAStudio Inc.**
 > 与 MUAStudio Inc. 无隶属、授权或赞助关系。
@@ -9,7 +9,7 @@ Fotufilm（https://fotufilm.com）的非官方 Windows 移植，附带简体中�
 
 ## 状态
 
-跟随上游 **1.16**，移植版本号 `1.16.0-w1`。
+跟随上游 **1.17**，移植版本号 `1.17.0-w1`。
 
 ## 这个移植做了什么
 

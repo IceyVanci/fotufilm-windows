@@ -25,7 +25,7 @@ class EmptyCanvas extends StatelessWidget {
     }
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        PillButton('打开图片或视频',
+        PillButton('打开图片',
             variant: ButtonVariant.accent, onPressed: ready ? onOpen : null),
         const SizedBox(height: 8),
         Text(ready ? '或将文件拖到此处' : '正在载入胶片…',

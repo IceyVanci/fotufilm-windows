@@ -7,6 +7,9 @@ const fs = require('fs'), path = require('path');
 
 const argv = process.argv.slice(2);
 const APPLY = argv.includes('--apply');
+// --report lists the user-visible literals this run could not translate: what the Chinese
+// tables still owe. It writes nothing.
+const REPORT = argv.includes('--report');
 const rootAt = argv.indexOf('--root');
 const REPO = rootAt >= 0 ? argv[rootAt + 1] : 'F:/Futo/upstream';
 const LIB = path.join(REPO, 'flutter/lib');
@@ -16,9 +19,12 @@ const ZH = path.join(LIB, 'i18n/zh.dart');
 const zhSrc = fs.readFileSync(ZH, 'utf8');
 const map = new Map([...zhSrc.matchAll(/"((?:[^"\\]|\\.)*)"\s*:\s*"((?:[^"\\]|\\.)*)"/g)]
   .map((m) => [m[1], m[2]]));
-const catalogue = JSON.parse(fs.readFileSync('F:/Futo/tools/zh-catalogue.json', 'utf8'));
+const tablePath = (name) => [path.join(__dirname, name), 'F:/Futo/tools/' + name].find((c) => fs.existsSync(c));
+const catalogue = JSON.parse(fs.readFileSync(tablePath('zh-catalogue.json'), 'utf8'));
 for (const [k, v] of Object.entries(catalogue)) map.set(k, v);
-const ui = JSON.parse(fs.readFileSync('F:/Futo/tools/zh-ui.json', 'utf8'));
+const ui = JSON.parse(fs.readFileSync(tablePath('zh-ui.json'), 'utf8'));
+// The UI table goes on top of the catalogue one: both are authoritative for zh.dart below.
+for (const [k, v] of Object.entries(ui)) map.set(k, v);
 
 // zh.dart is generated from the two tables: the catalogue half is applied when the control
 // catalogue loads (Catalogue.load), so the engine's generated sources stay untouched.
@@ -135,6 +141,7 @@ function walk(d, out = []) {
 }
 
 let replaced = 0, filesTouched = 0, protectedSkips = 0;
+const untranslated = [];
 const keptEnglish = [];
 for (const file of walk(LIB)) {
   const rel = path.relative(path.dirname(LIB), file).replace(/\\/g, '/');
@@ -178,7 +185,15 @@ for (const file of walk(LIB)) {
     }
     if (anyRaw) continue;
     const { norm, ph } = normalize(text);
-    if (!map.has(norm)) continue;
+    if (!map.has(norm)) {
+      if (REPORT && /[A-Za-z]{2,}/.test(text) && /\s/.test(text)
+          && !/^[a-z0-9_.\/-]+$/.test(text) && text.indexOf('\u0024') < 0
+          && !/^https?:|^\.\/|^\//.test(text)) {
+        const line = src.slice(0, tk.start).split('\n').length;
+        untranslated.push(rel + ':' + line + '\t' + JSON.stringify(text));
+      }
+      continue;
+    }
     if (/^[A-Z][A-Z0-9_]{2,}$/.test(text)) continue;
     if (/^\s*:\s*(Color|const\s+Color)\(/.test(src.slice(end, end + 24))) continue;
     const zh = render(text, ph, map.get(norm));
@@ -195,5 +210,14 @@ for (const file of walk(LIB)) {
 }
 console.log('root', REPO, APPLY ? '(written)' : '(dry run)');
 console.log('literal replacements:', replaced, 'files:', filesTouched, 'protected skips:', protectedSkips);
+if (REPORT) {
+  const seen = new Map();
+  for (const row of untranslated) {
+    const [where, lit] = row.split('\t');
+    if (!seen.has(lit)) seen.set(lit, where);
+  }
+  console.log('untranslated user-visible literals:', seen.size);
+  for (const [lit, where] of seen) console.log('  ' + where + '  ' + lit);
+}
 const uniq = [...new Set(keptEnglish)];
 if (uniq.length) console.log('-- protected literals that have a Chinese entry, kept English --\n' + uniq.join('\n'));
