@@ -263,5 +263,7 @@
   "What took the scan. Auto reads a camera RAW through its own camera's measured colour channels where the camera is one of those measured, and any other file as a generic camera. Choose Film Scanner for a scan from a dedicated film scanner.": "扫描来源。自动会按相机的实测色彩通道读取相机 RAW（该相机属于已实测机型时），其他文件按通用相机处理。若扫描来自专用底片扫描仪，请选择「胶片扫描仪」。",
   "You have Fotufilm {0}. The update arrives as a signed installer, like the one this copy was installed from. Installing may ask for your administrator password.": "您当前是 Fotufilm {0}。更新以已签名的安装程序形式发布，与本副本的安装方式相同。安装时可能会要求管理员密码。",
   "You're up to date": "已是最新版本",
-  "Zero KB": "0 KB"
+  "Zero KB": "0 KB",
+  "Video": "视频",
+  "Trichromatic Negative": "三色负片"
 }

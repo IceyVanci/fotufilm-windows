@@ -1,13 +1,111 @@
 diff --git a/flutter/lib/model/photo_library.dart b/flutter/lib/model/photo_library.dart
-index aa73dfd..a2bcad0 100644
+index aa73dfd..2c128d5 100644
 --- a/flutter/lib/model/photo_library.dart
 +++ b/flutter/lib/model/photo_library.dart
-@@ -213,7 +213,7 @@ class PhotoLibrary extends ChangeNotifier {
+@@ -12,6 +12,12 @@ import 'host_thumbnails.dart';
+ import 'library_files.dart';
+ import 'library_model.dart';
+ 
++/// A folder's name: the last segment of its path, or the path itself at a drive root.
++String _folderName(String path) {
++  final name = pathName(path);
++  return name.isEmpty ? path : name;
++}
++
+ /// A folder in the library and what was read from it.
+ class LibraryFolder {
+   LibraryFolder({
+@@ -25,7 +31,7 @@ class LibraryFolder {
+   factory LibraryFolder.fromJson(Json json) => LibraryFolder(
+         id: json['id'] as String,
+         path: json['path'] as String,
+-        name: json['name'] as String,
++        name: _folderName(json['path'] as String),
+         added: (json['added'] as num?)?.toInt() ?? 0,
+         negative: json['negative'] == true,
+       );
+@@ -152,7 +158,8 @@ class PhotoLibrary extends ChangeNotifier {
+               if (item is Map) (item['id'] as String, item['path'] as String),
+           ];
+     for (final (id, root) in roots) {
+-      if (file.startsWith('$root/')) return photoKey(id, file.substring(root.length + 1));
++      final target = pathSlashed(file), home = pathSlashed(root);
++      if (target.startsWith('$home/')) return photoKey(id, target.substring(home.length + 1));
+     }
+     return null;
+   }
+@@ -211,7 +218,11 @@ class PhotoLibrary extends ChangeNotifier {
+   /// Adds the folder at `path` (`chooseFolder`) and answers its id. A folder
+   /// already in the library is read again, or becomes a negatives folder when added as one.
    String? addFolder(String path, {bool negative = false}) {
-     final normal = path.length > 1 && path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+-    final normal = path.length > 1 && path.endsWith('/') ? path.substring(0, path.length - 1) : path;
++    final trimmed = path.length > 1 && RegExp(r'[\\/]$').hasMatch(path)
++        ? path.substring(0, path.length - 1)
++        : path;
++    // A drive root keeps its separator: "C:" alone names the current folder on C:.
++    final normal = RegExp(r'^[A-Za-z]:$').hasMatch(trimmed) ? path : trimmed;
      if (!isFolder(normal)) {
--      _set(() => error = 'The folder could not be opened.');
-+      _set(() => error = '无法打开该文件夹。');
+       _set(() => error = 'The folder could not be opened.');
+       return null;
+@@ -229,7 +240,7 @@ class PhotoLibrary extends ChangeNotifier {
+     final folder = LibraryFolder(
+       id: '${now.toRadixString(36)}-${normal.hashCode.toUnsigned(32).toRadixString(36)}',
+       path: normal,
+-      name: normal.substring(normal.lastIndexOf('/') + 1),
++      name: _folderName(normal),
+       added: now,
+       negative: negative,
+     );
+@@ -288,20 +299,22 @@ class PhotoLibrary extends ChangeNotifier {
+     try {
+       path = renameFile(file, name);
+     } catch (e) {
+-      final problem = e is UnsupportedError ? '${file.split('/').last} could not be renamed.' : fileProblem(e);
++      final problem = e is UnsupportedError ? '${pathName(file)} could not be renamed.' : fileProblem(e);
+       open ? _set(() => error = problem) : editor.showError(problem);
        return null;
      }
-     final existing = folders.where((f) => f.path == normal).firstOrNull;
+     final from = keyOf(file), to = keyOf(path);
++    final target = pathSlashed(file);
+     for (final folder in folders) {
+-      if (!file.startsWith('${folder.path}/')) continue;
++      final root = pathSlashed(folder.path);
++      if (!target.startsWith('$root/')) continue;
+       folder.photos = [
+         for (final p in folder.photos)
+-          p.file == file
++          pathSlashed(p.file) == target
+               ? LibraryPhoto(
+                   folderId: folder.id,
+                   root: folder.path,
+-                  path: path.substring(folder.path.length + 1),
++                  path: pathSlashed(path).substring(root.length + 1),
+                   size: p.size,
+                   modified: p.modified,
+                   negative: p.negative)
+@@ -335,9 +348,14 @@ class PhotoLibrary extends ChangeNotifier {
+   /// Moves files to the Trash, in library folders or not; answers the paths that went.
+   Future<Set<String>> trashFiles(List<String> files) async {
+     final gone = (await HostWindow.trash(files)).toSet();
++    final trashed = {for (final f in gone) pathSlashed(f)};
+     for (final folder in folders) {
+-      if (gone.any((f) => f.startsWith('${folder.path}/'))) {
+-        folder.photos = [for (final p in folder.photos) if (!gone.contains(p.file)) p];
++      final root = pathSlashed(folder.path);
++      if (trashed.any((f) => f.startsWith('$root/'))) {
++        folder.photos = [
++          for (final p in folder.photos)
++            if (!trashed.contains(pathSlashed(p.file))) p,
++        ];
+       }
+     }
+     final removed = {for (final f in gone) ?keyOf(f)};
+@@ -347,7 +365,7 @@ class PhotoLibrary extends ChangeNotifier {
+       _saveRecords();
+     }
+     gone.forEach(thumbnails.forget);
+-    final failed = [for (final f in files) if (!gone.contains(f)) f.split('/').last];
++    final failed = [for (final f in files) if (!gone.contains(f)) pathName(f)];
+     if (failed.isNotEmpty) {
+       final problem =
+           '${failed.join(', ')}: ${failed.length == 1 ? 'It' : 'They'} could not be moved to the Trash.';

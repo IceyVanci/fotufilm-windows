@@ -1,8 +1,31 @@
 #include "flutter_window.h"
 
+#include <windows.h>
+
 #include <optional>
 
 #include "flutter/generated_plugin_registrant.h"
+
+namespace {
+
+// Releases the engine's Vulkan device while its loader is still loaded. Windows runs the Halide
+// runtime's destructor during DLL detach, after the driver's loader may be gone, and NVIDIA's
+// driver then calls a null pointer: the crash recorded just after the window closes. The
+// controller is destroyed first, so no develop is in flight when this runs.
+void ReleaseHalideDevice() {
+  HMODULE engine = ::GetModuleHandleW(L"libfotufilm.dll");
+  if (engine == nullptr) {
+    return;
+  }
+  using Shutdown = void (*)();
+  auto shutdown = reinterpret_cast<Shutdown>(
+      ::GetProcAddress(engine, "fotufilm_halide_shutdown"));
+  if (shutdown != nullptr) {
+    shutdown();
+  }
+}
+
+}  // namespace
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -43,6 +66,8 @@ void FlutterWindow::OnDestroy() {
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
+
+  ReleaseHalideDevice();
 
   Win32Window::OnDestroy();
 }

@@ -10,12 +10,12 @@
 | 项 | 值 |
 |---|---|
 | 上游 | `DhaliwalX/fotufilm-engine` tag **v1.17**，commit `87a3f46`（用 tag 标定：上游 `version.env` 到 v1.17 仍是 `MARKETING_VERSION=1.14`，未随发布更新） |
-| 移植版本 | `1.17.0-w1` |
+| 移植版本 | `1.17.0-w2` |
 | 工具链 | Swift 6.2（Windows）、Flutter 3.50.0（Dart 3.14.0）、Halide 22.0.0、MSVC 14.50、Windows SDK 10.0.26100 |
 
 ## 规模
 
-相对 v1.17：移植层由 **105 个 overlay 文件**（整文件替换或新增）与 **35 个补丁**（对上游文件的定点改动）构成（另有 `.dart_tool`、`flutter/assets/generated` 等构建期产物，不计入）。
+相对 v1.17：移植层由 **105 个 overlay 文件**（整文件替换或新增）与 **34 个补丁**（对上游文件的定点改动）构成（另有 `.dart_tool`、`flutter/assets/generated` 等构建期产物，不计入）。
 
 > 1.17 同步时上游改到了 18 个 overlay 文件与 13 个补丁目标（含 `Pipeline/Gpu.h` 的 +103/−26 与 `negative_panel.dart` 的 +252/−13）。这些文件全部以三方合并的方式吸收上游改动后留在原层，没有再移出 overlay；`negative_panel` 等补丁因上游结构与新增中文文案而重建。
 

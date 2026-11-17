@@ -107,7 +107,9 @@ $env:HL_WINDOWS_TMP_DIR = 'F:\Futo\tmp'
 $env:FOTUFILM_AOT_DIR = $AotDir
 $env:HALIDE_ROOT = $HalideRoot
 $stageHeaders = Join-Path $Upstream 'Sources\FotofilmHalide'
-$newestStage = Get-ChildItem $stageHeaders -Recurse -Include '*.h','*.cpp' -File -ErrorAction SilentlyContinue |
+# Stage headers feed the AOT kernels; the folder's .cpp files (the host shim) do not, so
+# editing them must not demand regenerating the kernels.
+$newestStage = Get-ChildItem $stageHeaders -Recurse -Include '*.h' -File -ErrorAction SilentlyContinue |
   Sort-Object LastWriteTime -Descending | Select-Object -First 1
 $newestAot = Get-ChildItem $AotDir -Filter '*.lib' -File -ErrorAction SilentlyContinue |
   Sort-Object LastWriteTime -Descending | Select-Object -First 1

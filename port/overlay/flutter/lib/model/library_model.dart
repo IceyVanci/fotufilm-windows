@@ -44,6 +44,10 @@ String pathParent(String path) {
   return cut < 0 ? '' : path.substring(0, cut);
 }
 
+/// A path with one separator, for comparing one path against another: a folder's is whatever the
+/// platform printed, while a photo's inside it is joined with '/'.
+String pathSlashed(String path) => path.replaceAll('\\', '/');
+
 class LibraryPhoto {
   LibraryPhoto({
     required this.folderId,

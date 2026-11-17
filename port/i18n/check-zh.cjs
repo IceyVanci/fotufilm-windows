@@ -44,6 +44,10 @@ for (const f of walk(LIB)) {
   for (const m of src.matchAll(/(?:bands|axes)\s*=\s*\[([^\]]*)\]/g)) {
     if (CJK.test(m[1])) note(f, src, m.index, 'band/axis name');
   }
+  // so do the selective tool's, written inline as for (... in const [...])
+  for (const m of src.matchAll(/for \(final (?:band|axis) in const \[([^\]]*)\]/g)) {
+    if (CJK.test(m[1])) note(f, src, m.index, 'grade band/axis name');
+  }
 }
 console.log('key literals that contain Chinese:', bad.length);
 console.log(bad.join('\n') || '(none)');
