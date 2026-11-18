@@ -413,17 +413,22 @@ int32_t develop(const Element *input, Element *output, int32_t width, int32_t he
 
 }  // namespace
 
-extern "C" int32_t fotufilm_halide_gpu_device(void) { return chosen_device(); }
-
-/// Releases the device while its loader is still loaded. Windows runs library destructors during
-/// DLL detach, after the Vulkan loader the driver registered may be gone, and NVIDIA's driver then
-/// calls a null pointer. The Windows runner calls this once the window and its engine are gone
-/// (`flutter_window.cpp`), so nothing is left for that destructor to touch.
 #if defined(_WIN32)
 #define FOTUFILM_HALIDE_EXPORT __declspec(dllexport)
 #else
 #define FOTUFILM_HALIDE_EXPORT
 #endif
+
+/// Which device the engine develops on: 0 none, 1 CUDA, 2 Vulkan (`Device`). The editor reads it
+/// to say when the machine has no Vulkan device, which this engine needs to develop at all.
+extern "C" FOTUFILM_HALIDE_EXPORT int32_t fotufilm_halide_gpu_device(void) {
+    return chosen_device();
+}
+
+/// Releases the device while its loader is still loaded. Windows runs library destructors during
+/// DLL detach, after the Vulkan loader the driver registered may be gone, and NVIDIA's driver then
+/// calls a null pointer. The Windows runner calls this once the window and its engine are gone
+/// (`flutter_window.cpp`), so nothing is left for that destructor to touch.
 extern "C" FOTUFILM_HALIDE_EXPORT void fotufilm_halide_shutdown(void) {
     if (chosen_device() != kNone) release_device();
 }

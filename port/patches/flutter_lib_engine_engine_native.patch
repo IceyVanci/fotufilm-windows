@@ -1,0 +1,28 @@
+diff --git a/flutter/lib/engine/engine_native.dart b/flutter/lib/engine/engine_native.dart
+index 9c0e9e1..b8127be 100644
+--- a/flutter/lib/engine/engine_native.dart
++++ b/flutter/lib/engine/engine_native.dart
+@@ -14,11 +14,12 @@ import 'dart:typed_data';
+ import 'package:ffi/ffi.dart';
+ 
+ import 'engine.dart';
++import 'engine_backend.dart';
+ import 'fotufilm_ffi.dart';
+ 
+ Future<EngineConnection> connect() => NativeEngine.start();
+ 
+-class NativeEngine implements EngineConnection {
++class NativeEngine implements EngineConnection, EngineBackend {
+   NativeEngine._(this._commands, this._address, this.capabilities, this.description);
+ 
+   final SendPort _commands;
+@@ -43,6 +44,9 @@ class NativeEngine implements EngineConnection {
+ 
+   @override
+   bool get opensPaths => true;
++
++  @override
++  String get backend => (description['backend'] as String?) ?? '';
+   final _pending = <int, Completer<EngineReply>>{};
+   final _progress = <int, void Function(Map<String, dynamic>)>{};
+ 

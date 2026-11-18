@@ -9,7 +9,7 @@ Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，
 
 ## 状态
 
-跟随上游 **1.17**，移植版本号 `1.17.0-w2`。
+跟随上游 **1.17**，移植版本号 `1.17.0-w3`。
 
 ## 这个移植做了什么
 
@@ -38,8 +38,8 @@ Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，
 ## 系统要求
 
 - Windows 10 1903+ / Windows 11，x64
-- 支持 AVX2 的 CPU
-- 支持 Vulkan 的显卡（引擎的 GPU 路径只有 Vulkan）
+- 支持 AVX2 的 CPU（启动时检测，不支持会显示说明并退出）
+- 支持 Vulkan 的显卡（引擎的 GPU 路径只有 Vulkan；缺少时退回 CPU 处理，主界面顶部会常驻提示）
 
 ## 仓库结构
 

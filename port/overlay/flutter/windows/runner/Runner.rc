@@ -121,3 +121,15 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// The processor notice: shown before the window opens when the CPU has no AVX2,
+// so the first kernel would die with an illegal instruction.
+//
+
+STRINGTABLE
+BEGIN
+    IDS_CPU_UNSUPPORTED_TITLE "Fotufilm 无法在这台电脑上运行"
+    IDS_CPU_UNSUPPORTED       "这台电脑的处理器不支持 AVX2 指令集，Fotufilm 的引擎无法执行。\n\n支持 AVX2 的处理器：\n  · Intel 第 4 代 Core（Haswell，2013 年）及以后\n  · AMD Excavator（2015 年）/ Ryzen（2017 年）及以后\n\n注意：2015–2017 年的 Pentium、Celeron，以及 Apollo Lake、Gemini Lake、Jasper Lake 等平台通常不支持 AVX2。\n\n可用 CPU-Z 或 Sysinternals Coreinfo 确认。"
+END

@@ -13,6 +13,7 @@ Sources/FotufilmHost/HostPlatform.swift
 flutter/.metadata
 flutter/lib/app/commands.dart
 flutter/lib/app/editor_shortcuts.dart
+flutter/lib/engine/engine_backend.dart
 flutter/lib/engine/fotufilm_ffi.dart
 flutter/lib/model/app_dialogs.dart
 flutter/lib/model/auto_adjust.dart
@@ -50,6 +51,9 @@ flutter/lib/ui/kit/menu.dart
 flutter/lib/ui/theme/palette.dart
 flutter/lib/ui/theme/typography.dart
 flutter/lib/ui/workspace/app_dialogs.dart
+flutter/lib/ui/workspace/gpu_notice.dart
+flutter/lib/ui/workspace/gpu_probe_web.dart
+flutter/lib/ui/workspace/gpu_probe_io.dart
 flutter/lib/ui/workspace/crop_overlay.dart
 flutter/lib/ui/workspace/editing_dialogs.dart
 flutter/lib/ui/workspace/export_dialog.dart
