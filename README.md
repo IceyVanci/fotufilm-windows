@@ -29,6 +29,7 @@ Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，
 | 能力 | 本版本 |
 |---|---|
 | 静态图片：RAW、JPEG、PNG、TIFF、HEIF、OpenEXR | ✅ |
+| 尼康高效率 NEF（HE / HE*）：Z 6III、Z 8、Z 9、Z f | ✅ 解码器回移进 libraw，见 NOTICE-PORT 第九节 |
 | 负片扫描、片基取样、串色校正 | ✅ |
 | 批量导出、缩略图 | ✅ |
 | 视频 / 影片 | ❌ 引擎的影片层由各平台的媒体框架提供，Windows 侧未接入 |
@@ -39,7 +40,7 @@ Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，
 
 - Windows 10 1903+ / Windows 11，x64
 - 支持 AVX2 的 CPU（启动时检测，不支持会显示说明并退出）
-- 支持 Vulkan 的显卡（引擎的 GPU 路径只有 Vulkan；缺少时退回 CPU 处理，主界面顶部会常驻提示）
+- 支持 Vulkan 的显卡（引擎的 GPU 路径只有 Vulkan，没有 CPU 回退；缺少时主界面顶部会常驻提示）
 
 ## 仓库结构
 
@@ -48,6 +49,7 @@ Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，
 | `port/overlay/` | 移植自己写或改定的文件，按仓库内相对路径摆放 |
 | `port/patches/` | 相对上游 tag 的 unified diff |
 | `port/i18n/` | 汉化词表与重写器 |
+| `port/vcpkg-overlay/` | 带补丁的 vcpkg 端口（libraw 的尼康 HE/HE* 解码器） |
 | `scripts/sync-upstream.ps1` | 把移植层重放新的上游版本上 |
 | `scripts/build.ps1` | 引擎 + 界面 + 单文件打包 |
 | `packaging/` | 启动器与压缩打包器的源码 |

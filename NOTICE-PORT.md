@@ -10,7 +10,7 @@
 | 项 | 值 |
 |---|---|
 | 上游 | `DhaliwalX/fotufilm-engine` tag **v1.17**，commit `87a3f46`（用 tag 标定：上游 `version.env` 到 v1.17 仍是 `MARKETING_VERSION=1.14`，未随发布更新） |
-| 移植版本 | `1.17.0-w3` |
+| 移植版本 | `1.17.0-w4` |
 | 工具链 | Swift 6.2（Windows）、Flutter 3.50.0（Dart 3.14.0）、Halide 22.0.0、MSVC 14.50、Windows SDK 10.0.26100 |
 
 ## 规模
@@ -45,6 +45,7 @@
 | `flutter/tool/prepare.ps1` | 从 `web/src` 与字体源生成 `flutter/assets/generated/`（**构建期产物，不入库**） |
 | `packaging/launcher.cpp` 等 | 单文件启动器与压缩打包器（Windows Cabinet LZMS/XPRESS） |
 | `scripts/sync-upstream.ps1`、`scripts/build.ps1` | 重放与构建 |
+| `port/vcpkg-overlay/libraw/` | 带尼康 HE/HE* 解码器的 libraw 0.22.3 端口（见第九节） |
 
 ## 三、Windows 编辑器（新增 18 个文件）
 
@@ -135,3 +136,24 @@
 | 1.15.0-w3 | **953 ms** | **446 ms** |
 
 JPEG 同场景作对照：约 883–1094 ms，未变。
+
+## 九、1.17.0-w4 —— 尼康 HE/HE* RAW
+
+Windows 版现在能打开尼康“高效率”压缩（HE / HE*）的 NEF：Z 6III、Z 8、Z 9、Z f。机型判断同时
+纳入 Z 50II、Z 5II、Z R，解码器不认识的文件会得到明确报错，而不是把压缩数据当无损数据解出乱码。
+
+改动不在上游代码里：vcpkg 的 libraw 0.22.3 对 HE 数据只有一个直接抛异常的桩。移植层新增 overlay
+端口 `port/vcpkg-overlay/libraw/`，用 `libraw-nikon-he.patch`（3014 行，取自 LibRaw 202611 快照、
+含 11-08 的越界修复）把解码器回移进 0.22.3；补丁只新增一个文件并改动 libraw.h、内部函数声明、
+空桩、解码器信息表和机型判断五处，其余 LibRaw 代码不动。
+
+| 项 | 结果 |
+|---|---|
+| 解码耗时（Z 8 / Z 9，8280×5520，Ryzen 7 7700，16 线程） | 1.06–1.50 s，单线程 3.79 s |
+| 解码中间体 | 约 400 MB（45.7 MP），随解码结束释放 |
+| 验证样张 | Z 8 HE/HE*/无损、Z 9 HE/HE*、Z f HE/HE*/无损，共 8 个（raw.pixls.us，CC0）全部解码，图像与无损对照一致 |
+| 未验证 | Z 6III 无公开样张，未实机验证 |
+| 限制 | 只支持 Bayer 型 HE 文件；profile/机型不认识时报 "This Nikon high-efficiency NEF (HE/HE*) could not be decoded" |
+
+以上改动以 LGPL-2.1 / CDDL-1.0 分发（沿用 LibRaw 原许可，移植取 CDDL 1.0 选项），见
+`THIRD_PARTY_NOTICES.md`。

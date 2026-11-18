@@ -200,3 +200,16 @@ vcpkg install `
 **`libraw[openmp]` 那对方括号不能省。** vcpkg 的 libraw 端口 `"default-features": false`，
 不带这个 feature 编出来的是单线程库——RAW 打开会慢 3–4 倍，而且没有任何报错提示。
 引擎会因此链接 MSVC 的 OpenMP 运行时，`build.ps1` 会把 `vcomp140.dll` 一并放进发行包。
+
+**尼康 HE/HE* 要用带补丁的 libraw 端口。** Z 6III / Z 8 / Z 9 / Z f 的“高效率（HE/HE*）”NEF
+把 RAW 数据存成 JPEG XS 码流；vcpkg 的 libraw 0.22.3 只识别这种文件、不解码。仓库里带一个
+overlay 端口 `port\vcpkg-overlay\libraw`（0.22.3 + 从 LibRaw 202611 快照回移的 HE 解码器），
+装依赖时必须带上它：
+
+```powershell
+vcpkg install "libraw[openmp]:x64-windows-static-md" `
+  --overlay-ports=F:\Futo\fotufilm-windows\port\vcpkg-overlay
+```
+
+不带 overlay 装出来的库在打开 HE 文件时会报“不支持”。端口用 MSBuild 生成器编译：本机
+Ninja 下 cl 写 /Zi 调试记录会失败（D8050），MSBuild 驱动同一个编译器没有这个问题。

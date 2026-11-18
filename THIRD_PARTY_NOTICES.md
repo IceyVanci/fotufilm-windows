@@ -208,6 +208,17 @@ It uses **@bjorn3/browser_wasi_shim 0.4.2**, without modification, under
 [its MIT license](licenses/BROWSER-WASI-SHIM-MIT.txt). Source:
 <https://github.com/bjorn3/browser_wasi_shim>. Both notices are included in browser builds.
 
+## Windows engine LibRaw
+
+The Windows engine builds **LibRaw 0.22.3** with the Nikon HE/HE* decoder backported from the
+LibRaw 202611 snapshot (decoder Copyright (C) 2024 Alexey Danilchenko; LibRaw copyright
+(C) 2024–2026 LibRaw LLC and the contributors listed in its `COPYRIGHT`). Fotufilm distributes
+this component under LibRaw's **CDDL 1.0** option, like the rest of the library. The change is a
+local patch against the unmodified 0.22.3 sources — `libraw-nikon-he.patch` in the vcpkg overlay
+port `port/vcpkg-overlay/libraw/` of the port repository, which lists every file it touches. No
+other LibRaw code is modified. LibRaw's sources and individual source-file notices are available
+from the linked release archive (0.22.3) and from the LibRaw repository (the backported decoder).
+
 ## Linux desktop image libraries
 
 The Linux AppImage (`flutter/tool/package-appimage.sh`) carries unmodified shared libraries from the

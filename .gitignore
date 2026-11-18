@@ -9,6 +9,11 @@ packaging/bin/
 
 *.log
 *.pdb
+
+# Nikon HE/HE* sample bodies (raw.pixls.us, CC0) kept at the repository root for local
+# verification only: large binaries that must not be committed.
+/*.NEF
+/*.nef
 *.lib
 *.obj
 .DS_Store
