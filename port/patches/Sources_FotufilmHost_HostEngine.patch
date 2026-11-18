@@ -1,0 +1,18 @@
+diff --git a/Sources/FotufilmHost/HostEngine.swift b/Sources/FotufilmHost/HostEngine.swift
+index 505a977..4f901d1 100644
+--- a/Sources/FotufilmHost/HostEngine.swift
++++ b/Sources/FotufilmHost/HostEngine.swift
+@@ -229,7 +229,13 @@ public final class HostEngine {
+         } else if FotufilmEngine.isHalideBackendAvailable {
+             developer = HalideCPUDeveloper()
+         } else {
++            #if os(Windows)
++            // Windows has no CPU developer: without a Vulkan device there is no engine at all,
++            // and "not linked" would hide that.
++            throw Failure(description: "No Vulkan device is available, so the engine cannot start.")
++            #else
+             throw Failure(description: "The Halide engine is not linked into this build.")
++            #endif
+         }
+         HostFilmPacks.publish(filmPacks)
+         loadedStocks = FilmStock.presets

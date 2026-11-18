@@ -157,3 +157,14 @@ Windows 版现在能打开尼康“高效率”压缩（HE / HE*）的 NEF：Z 6
 
 以上改动以 LGPL-2.1 / CDDL-1.0 分发（沿用 LibRaw 原许可，移植取 CDDL 1.0 选项），见
 `THIRD_PARTY_NOTICES.md`。
+
+同一版还改了两处“没有 Vulkan 时”的提示，都只影响文案：
+
+- `Sources/FotufilmHost/HostEngine.swift`：Windows 下拿不到 Vulkan 设备时，抛
+  “No Vulkan device is available, so the engine cannot start.”，不再沿用上游那句会误导人的
+  “The Halide engine is not linked into this build.”（引擎其实链进来了，是设备不可用）。
+- `flutter/lib/ui/workspace/overlays.dart`：主界面中央在检测不到 Vulkan 时直接显示中文说明，
+  与顶部横幅一致，不再把英文引擎报错拼在“引擎无法启动。”后面。
+
+对应补丁：`port/patches/Sources_FotufilmHost_HostEngine.patch`、
+`port/patches/flutter_lib_ui_workspace_overlays.patch`。

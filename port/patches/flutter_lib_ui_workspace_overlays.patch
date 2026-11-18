@@ -1,0 +1,26 @@
+diff --git a/flutter/lib/ui/workspace/overlays.dart b/flutter/lib/ui/workspace/overlays.dart
+index 4869ff2..e211bd6 100644
+--- a/flutter/lib/ui/workspace/overlays.dart
++++ b/flutter/lib/ui/workspace/overlays.dart
+@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
+ 
+ import '../kit/kit.dart';
+ import '../theme/theme.dart';
++import 'gpu_probe_web.dart' if (dart.library.io) 'gpu_probe_io.dart';
+ 
+ class EmptyCanvas extends StatelessWidget {
+   const EmptyCanvas({super.key, required this.onOpen, required this.ready, this.error});
+@@ -18,7 +19,12 @@ class EmptyCanvas extends StatelessWidget {
+       return Center(
+         child: Padding(
+           padding: const EdgeInsets.all(24),
+-          child: Text('The engine could not start. $error',
++          // Without a Vulkan device the engine cannot start at all, and its "not linked" message
++          // would be wrong: say what the strip says instead.
++          child: Text(
++              noVulkanDevice
++                  ? '未检测到支持 Vulkan 的显卡，引擎无法启动。请更新显卡驱动，或换用支持 Vulkan 的显卡。'
++                  : '引擎无法启动。$error',
+               textAlign: TextAlign.center, style: editorText(context, color: palette.muted)),
+         ),
+       );
