@@ -42,6 +42,20 @@
 #endif
 #include <HalideRuntimeVulkan.h>
 
+#if defined(FOTUFILM_HALIDE_WINDOWS_CPU)
+// The CPU fallback's kernels (tools/generate-halide-cpu-windows.ps1): the reference CPU pipeline
+// compiled for this machine, so a host with no Vulkan device develops instead of refusing to
+// start. Their schedules, and the order of their arguments, are the browser's CPU fallback's
+// (web/engine/fotufilm_wasm_cpu.cpp).
+#include "develop_flexible.h"
+#include "develop_flexible_annular.h"
+#include "plain_float.h"
+#include "print_0.h"
+#include "print_1.h"
+#include "print_2.h"
+#include "print_3.h"
+#endif
+
 #include "FotufilmHalide.h"
 #include "FotufilmNegativeScan.h"
 #include "FotufilmResolvedFrameParams.h"
@@ -84,6 +98,7 @@ inline int set_environment(const char *name, const char *value, int overwrite) {
 #include <iterator>
 #include <mutex>
 #include <string>
+#include <vector>
 
 using Halide::Runtime::Buffer;
 using fotufilm::aot::AotVariant;
@@ -413,6 +428,262 @@ int32_t develop(const Element *input, Element *output, int32_t width, int32_t he
 
 }  // namespace
 
+#if defined(FOTUFILM_HALIDE_WINDOWS_CPU)
+// ── The CPU fallback ────────────────────────────────────────────────────────────────────────
+// The modules web/engine/fotufilm_wasm_cpu.cpp links for the browser: one develop graph
+// carrying the whole stage set behind the configuration's mask, the print stage's four
+// reversal/monochrome pairs, and plain_float for Normal, with nothing in the gate.
+namespace {
+
+using CpuFilmTileStore = fotufilm::BasicFilmTileStore<Buffer<float>>;
+
+/// The grain tiles the CPU kernels read, in host memory: the device store's upload would reach a
+/// device this build may not have.
+CpuFilmTileStore &cpu_film_tiles() {
+    // Never destroyed: a develop on another thread may still read it while the process exits.
+    static CpuFilmTileStore &store = *new CpuFilmTileStore;
+    return store;
+}
+
+void init_planar(halide_buffer_t *buffer, halide_dimension_t *dims, float *host,
+                 int32_t width, int32_t height, int32_t channels) {
+    std::memset(buffer, 0, sizeof(*buffer));
+    dims[0].min = 0; dims[0].extent = width; dims[0].stride = 1; dims[0].flags = 0;
+    dims[1].min = 0; dims[1].extent = height; dims[1].stride = width; dims[1].flags = 0;
+    if (channels > 0) {
+        dims[2].min = 0; dims[2].extent = channels; dims[2].stride = width * height;
+        dims[2].flags = 0;
+    }
+    buffer->host = reinterpret_cast<uint8_t *>(host);
+    buffer->dim = dims;
+    buffer->dimensions = channels > 0 ? 3 : 2;
+    // Constructed rather than assigned field by field: Halide 22 split the language Type from
+    // the ABI halide_type_t, and both versions take this ctor.
+    buffer->type = halide_type_t(halide_type_float, 32);
+}
+
+void init_flat(halide_buffer_t *buffer, halide_dimension_t *dim, const float *host,
+               int32_t count) {
+    std::memset(buffer, 0, sizeof(*buffer));
+    dim[0].min = 0; dim[0].extent = count; dim[0].stride = 1; dim[0].flags = 0;
+    buffer->host = reinterpret_cast<uint8_t *>(const_cast<float *>(host));
+    buffer->dim = dim;
+    buffer->dimensions = 1;
+    buffer->type = halide_type_t(halide_type_float, 32);
+}
+
+/// The tiles a frame names, or the one-float stand-in it reads nothing from.
+void init_film_tiles(halide_buffer_t *buffer, halide_dimension_t *dims, float *tiles, bool on) {
+    static float stand_in = 0.0f;
+    const int32_t extents[3] = {on ? CpuFilmTileStore::kEntries : 1,
+                                on ? FOTUFILM_FILM_TILE_LEVELS : 1, on ? 3 : 1};
+    std::memset(buffer, 0, sizeof(*buffer));
+    int32_t stride = 1;
+    for (int d = 0; d < 3; ++d) {
+        dims[d].min = 0; dims[d].extent = extents[d]; dims[d].stride = stride; dims[d].flags = 0;
+        stride *= extents[d];
+    }
+    buffer->host = reinterpret_cast<uint8_t *>(on ? tiles : &stand_in);
+    buffer->dim = dims;
+    buffer->dimensions = 3;
+    buffer->type = halide_type_t(halide_type_float, 32);
+}
+
+int32_t cpu_develop_planes(const float *input_r, const float *input_g, const float *input_b,
+                           float *density, int32_t width, int32_t height, int32_t origin_x,
+                           int32_t origin_y, const float *configuration,
+                           const float *exposure_lut, int32_t feature_mask, uint32_t seed) {
+    halide_buffer_t in_r, in_g, in_b, config_buf, exposure_buf, density_buf, film_tiles_buf;
+    halide_dimension_t dr[2], dg[2], db[2], cd[1], ed[1], dd[3], ftd[3];
+    init_planar(&in_r, dr, const_cast<float *>(input_r), width, height, 0);
+    init_planar(&in_g, dg, const_cast<float *>(input_g), width, height, 0);
+    init_planar(&in_b, db, const_cast<float *>(input_b), width, height, 0);
+    init_planar(&density_buf, dd, density, width, height, 3);
+    init_flat(&config_buf, cd, configuration, FOTUFILM_FRAME_CONFIGURATION_COUNT);
+    init_flat(&exposure_buf, ed, exposure_lut, kLutValueCount);
+    bool film_on = false;
+    Buffer<float> tiles = cpu_film_tiles().tiles_for(configuration, film_on);
+    init_film_tiles(&film_tiles_buf, ftd, tiles.data(), film_on);
+
+    const fotufilm::ResolvedFrameParams resolved(configuration, width, height, seed,
+                                                 (feature_mask & FOTUFILM_FRAME_REVERSAL) != 0,
+                                                 origin_x, origin_y);
+    const int32_t mtf_luma_radius =
+        std::max(0, int32_t(configuration[FOTUFILM_CONFIG_MTF_LUMA_RADIUS]));
+    const int32_t grain_mode = int32_t(configuration[FOTUFILM_CONFIG_GRAIN_MODE]);
+    const int32_t monochrome = (feature_mask & FOTUFILM_FRAME_MONOCHROME) != 0;
+
+#define FOTUFILM_CPU_DEVELOP_ARGUMENTS \
+    &in_r, &in_g, &in_b, &config_buf, &exposure_buf, width, height, \
+    resolved.mtf_sigma_0, resolved.mtf_sigma_1, resolved.mtf_sigma_2, \
+    resolved.mtf_luma_sigma, resolved.mtf_radius_0, resolved.mtf_radius_1, \
+    resolved.mtf_radius_2, mtf_luma_radius, resolved.halation_stride_0, \
+    resolved.halation_stride_1, resolved.halation_stride_2, \
+    resolved.halation_strided_radius_0, resolved.halation_strided_radius_1, \
+    resolved.halation_strided_radius_2, resolved.coupler_sigma, resolved.coupler_radius, \
+    resolved.adjacency_sigma, resolved.adjacency_radius, \
+    resolved.adjacency_secondary_sigma, resolved.adjacency_secondary_radius, \
+    resolved.fringe_sigma, resolved.fringe_radius, resolved.grain_sigma, \
+    resolved.grain_radius, resolved.grain_lambda, resolved.print_mtf_radius, seed, \
+    resolved.reversal, monochrome, origin_x, origin_y, grain_mode, resolved.mottle_radius, \
+    resolved.mottle_lambda, resolved.diffusion_stride_0, resolved.diffusion_stride_1, \
+    resolved.diffusion_stride_2, resolved.diffusion_strided_radius_0, \
+    resolved.diffusion_strided_radius_1, resolved.diffusion_strided_radius_2, \
+    feature_mask, &film_tiles_buf, film_on ? 1 : 0, &density_buf
+
+    const int32_t status = (feature_mask & FOTUFILM_FRAME_HALATION_ANNULAR) != 0
+                               ? develop_flexible_annular(FOTUFILM_CPU_DEVELOP_ARGUMENTS)
+                               : develop_flexible(FOTUFILM_CPU_DEVELOP_ARGUMENTS);
+#undef FOTUFILM_CPU_DEVELOP_ARGUMENTS
+    return status;
+}
+
+int32_t cpu_print_planes(const float *density, float *output, int32_t width, int32_t height,
+                         const float *configuration, const float *film_lut,
+                         const float *paper_lut, int32_t feature_mask) {
+    halide_buffer_t density_buf, config_buf, film_buf, paper_buf, out_buf;
+    halide_dimension_t dd[3], cd[1], fd[1], pd[1], od[3];
+    init_planar(&density_buf, dd, const_cast<float *>(density), width, height, 3);
+    init_planar(&out_buf, od, output, width, height, 3);
+    init_flat(&config_buf, cd, configuration, FOTUFILM_FRAME_CONFIGURATION_COUNT);
+    init_flat(&film_buf, fd, film_lut, kLutValueCount);
+    init_flat(&paper_buf, pd, paper_lut, kLutValueCount);
+    const bool reversal = (feature_mask & FOTUFILM_FRAME_REVERSAL) != 0;
+    const bool monochrome = (feature_mask & FOTUFILM_FRAME_MONOCHROME) != 0;
+    switch ((reversal ? 1 : 0) | (monochrome ? 2 : 0)) {
+        case 0: return print_0(&density_buf, &config_buf, &film_buf, &paper_buf, &out_buf);
+        case 1: return print_1(&density_buf, &config_buf, &film_buf, &paper_buf, &out_buf);
+        case 2: return print_2(&density_buf, &config_buf, &film_buf, &paper_buf, &out_buf);
+        default: return print_3(&density_buf, &config_buf, &film_buf, &paper_buf, &out_buf);
+    }
+}
+
+/// Develops one tile (or one whole frame) and prints it, then copies the interior to the
+/// frame-sized output planes at origin + interior. width/height are the input's own size, apron
+/// included, and origin_x/origin_y place it in the frame so a spatial stage reads the neighbours
+/// it would read in the whole frame.
+int32_t cpu_process_tile(const float *input_r, const float *input_g, const float *input_b,
+                         float *output_r, float *output_g, float *output_b, int32_t width,
+                         int32_t height, int32_t output_width, int32_t output_height,
+                         int32_t origin_x, int32_t origin_y, int32_t interior_left,
+                         int32_t interior_top, int32_t interior_width, int32_t interior_height,
+                         const float *configuration, const float *exposure_lut,
+                         const float *film_lut, const float *paper_lut, int32_t feature_mask,
+                         uint32_t seed) {
+    if (!input_r || !input_g || !input_b || !output_r || !output_g || !output_b
+        || !configuration || width <= 0 || height <= 0 || output_width <= 0
+        || output_height <= 0 || interior_width <= 0 || interior_height <= 0)
+        return -1;
+    const int64_t count = int64_t(width) * height;
+    std::vector<float> out(size_t(count) * 3);
+    if (feature_mask & FOTUFILM_FRAME_NO_FILM) {
+        // Normal: the creative controls and the delivery basis, with nothing in the gate.
+        halide_buffer_t in_r, in_g, in_b, config_buf, out_buf;
+        halide_dimension_t dr[2], dg[2], db[2], cd[1], od[3];
+        init_planar(&in_r, dr, const_cast<float *>(input_r), width, height, 0);
+        init_planar(&in_g, dg, const_cast<float *>(input_g), width, height, 0);
+        init_planar(&in_b, db, const_cast<float *>(input_b), width, height, 0);
+        init_flat(&config_buf, cd, configuration, FOTUFILM_FRAME_CONFIGURATION_COUNT);
+        init_planar(&out_buf, od, out.data(), width, height, 3);
+        const int32_t status =
+            plain_float(&in_r, &in_g, &in_b, &config_buf, origin_x, origin_y, &out_buf);
+        if (status) return status;
+    } else {
+        if (!exposure_lut || !film_lut || !paper_lut) return -1;
+        std::vector<float> density(size_t(count) * 3);
+        int32_t status = 0;
+        if (feature_mask & FOTUFILM_FRAME_DENSITY_IN) {
+            // A scan arrives as its measured densities; the print stage is all that is left.
+            std::copy_n(input_r, count, density.data());
+            std::copy_n(input_g, count, density.data() + count);
+            std::copy_n(input_b, count, density.data() + count * 2);
+        } else {
+            status = cpu_develop_planes(input_r, input_g, input_b, density.data(), width, height,
+                                        origin_x, origin_y, configuration, exposure_lut,
+                                        feature_mask, seed);
+            if (status) return status;
+        }
+        if (feature_mask & FOTUFILM_FRAME_LIGHT_OUT) {
+            out = density;
+        } else {
+            status = cpu_print_planes(density.data(), out.data(), width, height, configuration,
+                                      film_lut, paper_lut, feature_mask);
+            if (status) return status;
+        }
+    }
+    // Only the interior reaches the frame: the apron exists to be read, not delivered.
+    for (int32_t row = 0; row < interior_height; ++row) {
+        const int64_t from = int64_t(row + interior_top) * width + interior_left;
+        const int64_t to =
+            int64_t(origin_y + interior_top + row) * output_width + origin_x + interior_left;
+        std::copy_n(out.data() + from, interior_width, output_r + to);
+        std::copy_n(out.data() + count + from, interior_width, output_g + to);
+        std::copy_n(out.data() + count * 2 + from, interior_width, output_b + to);
+    }
+    return 0;
+}
+
+/// A separable Gaussian on one plane, clamped at the edges.
+void gaussian_plane(const float *input, float *output, int32_t width, int32_t height, float sigma,
+                    int32_t radius) {
+    std::vector<float> weights(size_t(2 * radius + 1));
+    float total = 0;
+    for (int32_t i = -radius; i <= radius; ++i) {
+        const float weight = std::exp(-float(i) * float(i) / (2 * sigma * sigma));
+        weights[size_t(i + radius)] = weight;
+        total += weight;
+    }
+    for (auto &weight : weights) weight /= total;
+    std::vector<float> rows(size_t(width) * size_t(height));
+    for (int32_t y = 0; y < height; ++y)
+        for (int32_t x = 0; x < width; ++x) {
+            float sum = 0;
+            for (int32_t i = -radius; i <= radius; ++i)
+                sum += input[int64_t(y) * width + std::min(std::max(x + i, 0), width - 1)]
+                       * weights[size_t(i + radius)];
+            rows[int64_t(y) * width + x] = sum;
+        }
+    for (int32_t y = 0; y < height; ++y)
+        for (int32_t x = 0; x < width; ++x) {
+            float sum = 0;
+            for (int32_t i = -radius; i <= radius; ++i)
+                sum += rows[int64_t(std::min(std::max(y + i, 0), height - 1)) * width + x]
+                       * weights[size_t(i + radius)];
+            output[int64_t(y) * width + x] = sum;
+        }
+}
+
+/// Three box passes: the Gaussian's bounded approximation, as the CPU hosts run it.
+void box_plane(const float *input, float *output, int32_t width, int32_t height, int32_t radius) {
+    const int32_t window = 2 * radius + 1;
+    std::vector<float> first(size_t(width) * size_t(height));
+    std::vector<float> second(size_t(width) * size_t(height));
+    for (int32_t y = 0; y < height; ++y)
+        for (int32_t x = 0; x < width; ++x) {
+            float sum = 0;
+            for (int32_t i = -radius; i <= radius; ++i)
+                sum += input[int64_t(y) * width + std::min(std::max(x + i, 0), width - 1)];
+            first[int64_t(y) * width + x] = sum / float(window);
+        }
+    for (int32_t y = 0; y < height; ++y)
+        for (int32_t x = 0; x < width; ++x) {
+            float sum = 0;
+            for (int32_t i = -radius; i <= radius; ++i)
+                sum += first[int64_t(std::min(std::max(y + i, 0), height - 1)) * width + x];
+            second[int64_t(y) * width + x] = sum / float(window);
+        }
+    for (int32_t y = 0; y < height; ++y)
+        for (int32_t x = 0; x < width; ++x) {
+            float sum = 0;
+            for (int32_t i = -radius; i <= radius; ++i)
+                sum += second[int64_t(y) * width + std::min(std::max(x + i, 0), width - 1)];
+            output[int64_t(y) * width + x] = sum / float(window);
+        }
+}
+
+}  // namespace
+#endif  // FOTUFILM_HALIDE_WINDOWS_CPU
+
 #if defined(_WIN32)
 #define FOTUFILM_HALIDE_EXPORT __declspec(dllexport)
 #else
@@ -611,7 +882,14 @@ extern "C" int32_t fotufilm_transport_frame_finish(fotufilm_transport_frame *fra
     return fotufilm::transport_frame::finish(frame, deliver);
 }
 
+#if defined(FOTUFILM_HALIDE_WINDOWS_CPU)
+/// This target was compiled against the CPU kernels (tools/generate-halide-cpu-windows.ps1): the
+/// engine has a developer even where no Vulkan device answers.
+extern "C" int32_t fotufilm_halide_available(void) { return 1; }
+#else
+/// No CPU kernels were linked: the engine develops on a device or not at all.
 extern "C" int32_t fotufilm_halide_available(void) { return 0; }
+#endif
 // The Film tile builder needs the Halide compiler; the engine builds tiles in Swift instead.
 extern "C" int32_t fotufilm_film_tile_build(int32_t, int32_t, int32_t, const float *, int32_t,
     const float *, const float *, int32_t, uint32_t, int32_t, float *) {
@@ -619,6 +897,10 @@ extern "C" int32_t fotufilm_film_tile_build(int32_t, int32_t, int32_t, const flo
 }
 extern "C" int32_t fotufilm_halide_set_film_tiles(int32_t id, const float *tiles,
                                                   int64_t count) {
+#if defined(FOTUFILM_HALIDE_WINDOWS_CPU)
+    // A CPU-only host reads the tiles from host memory; there is no device copy to make.
+    if (chosen_device() == kNone) return cpu_film_tiles().set(id, tiles, count) ? 0 : -1;
+#endif
     return film_tile_store().set(id, tiles, count) ? 0 : -1;
 }
 extern "C" int32_t fotufilm_halide_set_extra_donor_lut(int32_t, const float *lut,
@@ -626,6 +908,156 @@ extern "C" int32_t fotufilm_halide_set_extra_donor_lut(int32_t, const float *lut
     if (!lut || count == 0) return 0;
     return count == int64_t(kLutValueCount) ? -2 : -1;
 }
+
+#if defined(FOTUFILM_HALIDE_WINDOWS_CPU)
+// The entry points the portable developer reaches (Sources/FotufilmCore/HalideBackend.swift),
+// answered by the CPU kernels. The argument order is FotufilmHalide.h's, which the engine
+// already speaks through the device road.
+extern "C" int32_t fotufilm_halide_develop(
+    const float *input_r, const float *input_g, const float *input_b,
+    float *output_r, float *output_g, float *output_b,
+    int32_t width, int32_t height,
+    const float *configuration,
+    const float *exposure_lut, int32_t lut_dimension,
+    int32_t feature_mask, uint32_t seed) {
+    if (!input_r || !input_g || !input_b || !output_r || !output_g || !output_b
+        || !configuration || !exposure_lut || width <= 0 || height <= 0
+        || lut_dimension != kLutDimension)
+        return -1;
+    if (feature_mask & FOTUFILM_FRAME_NO_FILM) return -2;
+    const int64_t count = int64_t(width) * height;
+    std::vector<float> density(size_t(count) * 3);
+    int32_t status = 0;
+    if (feature_mask & FOTUFILM_FRAME_DENSITY_IN) {
+        std::copy_n(input_r, count, density.data());
+        std::copy_n(input_g, count, density.data() + count);
+        std::copy_n(input_b, count, density.data() + count * 2);
+    } else {
+        status = cpu_develop_planes(input_r, input_g, input_b, density.data(), width, height,
+                                    0, 0, configuration, exposure_lut, feature_mask, seed);
+        if (status) return status;
+    }
+    std::copy_n(density.data(), count, output_r);
+    std::copy_n(density.data() + count, count, output_g);
+    std::copy_n(density.data() + count * 2, count, output_b);
+    return 0;
+}
+extern "C" int32_t fotufilm_halide_print(
+    const float *input_r, const float *input_g, const float *input_b,
+    float *output_r, float *output_g, float *output_b,
+    int32_t width, int32_t height,
+    const float *configuration,
+    const float *film_output_lut, const float *paper_output_lut,
+    int32_t lut_dimension, int32_t feature_mask) {
+    if (!input_r || !input_g || !input_b || !output_r || !output_g || !output_b
+        || !configuration || !film_output_lut || !paper_output_lut || width <= 0 || height <= 0
+        || lut_dimension != kLutDimension)
+        return -1;
+    const int64_t count = int64_t(width) * height;
+    std::vector<float> density(size_t(count) * 3);
+    std::copy_n(input_r, count, density.data());
+    std::copy_n(input_g, count, density.data() + count);
+    std::copy_n(input_b, count, density.data() + count * 2);
+    std::vector<float> out(size_t(count) * 3);
+    const int32_t status = cpu_print_planes(density.data(), out.data(), width, height,
+                                            configuration, film_output_lut, paper_output_lut,
+                                            feature_mask);
+    if (status) return status;
+    std::copy_n(out.data(), count, output_r);
+    std::copy_n(out.data() + count, count, output_g);
+    std::copy_n(out.data() + count * 2, count, output_b);
+    return 0;
+}
+extern "C" int32_t fotufilm_halide_process(
+    const float *input_r, const float *input_g, const float *input_b,
+    float *output_r, float *output_g, float *output_b,
+    int32_t width, int32_t height,
+    const float *configuration,
+    const float *exposure_lut, const float *film_output_lut,
+    const float *paper_output_lut, int32_t lut_dimension,
+    int32_t feature_mask, uint32_t seed) {
+    if (lut_dimension != kLutDimension) return -1;
+    return cpu_process_tile(input_r, input_g, input_b, output_r, output_g, output_b,
+                            width, height, width, height, 0, 0, 0, 0, width, height,
+                            configuration, exposure_lut, film_output_lut, paper_output_lut,
+                            feature_mask, seed);
+}
+extern "C" int32_t fotufilm_halide_process_strip(
+    const float *input_r, const float *input_g, const float *input_b,
+    float *output_r, float *output_g, float *output_b,
+    int32_t width, int32_t height,
+    int32_t output_width, int32_t output_height,
+    int32_t origin_x, int32_t origin_y,
+    int32_t interior_top, int32_t interior_height,
+    const float *configuration,
+    const float *exposure_lut, const float *film_output_lut,
+    const float *paper_output_lut, int32_t lut_dimension,
+    int32_t feature_mask, uint32_t seed) {
+    if (lut_dimension != kLutDimension) return -1;
+    return cpu_process_tile(input_r, input_g, input_b, output_r, output_g, output_b,
+                            width, height, output_width, output_height, origin_x, origin_y,
+                            0, interior_top, width, interior_height,
+                            configuration, exposure_lut, film_output_lut, paper_output_lut,
+                            feature_mask, seed);
+}
+extern "C" int32_t fotufilm_halide_process_tile(
+    const float *input_r, const float *input_g, const float *input_b,
+    float *output_r, float *output_g, float *output_b,
+    int32_t width, int32_t height, int32_t output_width, int32_t output_height,
+    int32_t origin_x, int32_t origin_y, int32_t interior_left, int32_t interior_top,
+    int32_t interior_width, int32_t interior_height,
+    const float *configuration,
+    const float *exposure_lut, const float *film_output_lut,
+    const float *paper_output_lut, int32_t lut_dimension,
+    int32_t feature_mask, uint32_t seed) {
+    if (lut_dimension != kLutDimension) return -1;
+    return cpu_process_tile(input_r, input_g, input_b, output_r, output_g, output_b,
+                            width, height, output_width, output_height, origin_x, origin_y,
+                            interior_left, interior_top, interior_width, interior_height,
+                            configuration, exposure_lut, film_output_lut, paper_output_lut,
+                            feature_mask, seed);
+}
+// Photographic record exposure needs a kernel compiled with it; the CPU set has none.
+extern "C" int32_t fotufilm_halide_process_tile_with_exposure(
+    const float *input_r, const float *input_g, const float *input_b,
+    float *output_r, float *output_g, float *output_b,
+    int32_t width, int32_t height, int32_t output_width, int32_t output_height,
+    int32_t origin_x, int32_t origin_y, int32_t interior_left, int32_t interior_top,
+    int32_t interior_width, int32_t interior_height,
+    const float *configuration,
+    const float *exposure_lut, const float *film_output_lut,
+    const float *paper_output_lut, int32_t lut_dimension,
+    int32_t feature_mask, uint32_t seed, const float *additional_record_exposure) {
+    if (additional_record_exposure != nullptr) return -1;
+    return fotufilm_halide_process_tile(
+        input_r, input_g, input_b, output_r, output_g, output_b, width, height, output_width,
+        output_height, origin_x, origin_y, interior_left, interior_top, interior_width,
+        interior_height, configuration, exposure_lut, film_output_lut, paper_output_lut,
+        lut_dimension, feature_mask, seed);
+}
+extern "C" int32_t fotufilm_halide_gaussian(
+    const float *input, float *output, int32_t width, int32_t height,
+    float sigma, int32_t radius) {
+    if (!input || !output || width < 1 || height < 1 || radius < 0 || !(sigma > 0)) return -1;
+    if (radius == 0) {
+        std::copy_n(input, int64_t(width) * height, output);
+        return 0;
+    }
+    gaussian_plane(input, output, width, height, sigma, radius);
+    return 0;
+}
+extern "C" int32_t fotufilm_halide_approximate_gaussian(
+    const float *input, float *output, int32_t width, int32_t height, int32_t radius) {
+    if (!input || !output || width < 1 || height < 1 || radius < 0) return -1;
+    if (radius == 0) {
+        std::copy_n(input, int64_t(width) * height, output);
+        return 0;
+    }
+    box_plane(input, output, width, height, radius);
+    return 0;
+}
+#else
+// No CPU kernels: the device entry points are all this build has.
 extern "C" int32_t fotufilm_halide_develop(
     const float *, const float *, const float *, float *, float *, float *,
     int32_t, int32_t, const float *, const float *, int32_t, int32_t,
@@ -657,5 +1089,5 @@ extern "C" int32_t fotufilm_halide_gaussian(
     const float *, float *, int32_t, int32_t, float, int32_t) { return -1; }
 extern "C" int32_t fotufilm_halide_approximate_gaussian(
     const float *, float *, int32_t, int32_t, int32_t) { return -1; }
-
+#endif  // FOTUFILM_HALIDE_WINDOWS_CPU
 #endif

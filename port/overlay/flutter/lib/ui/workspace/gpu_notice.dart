@@ -1,5 +1,6 @@
-// A thin strip under the toolbar while the machine has no Vulkan device: the Windows engine has no
-// CPU developer, so photographs cannot develop there until a Vulkan GPU and its driver are present.
+// A thin strip under the toolbar while the machine has no Vulkan device: the engine then develops
+// on the portable CPU kernels instead (tools/generate-halide-cpu-windows.ps1), which works but is
+// much slower, so the editor says so rather than leave the wait unexplained.
 import 'package:flutter/widgets.dart';
 
 import '../theme/theme.dart';
@@ -22,7 +23,7 @@ class GpuNotice extends StatelessWidget {
         border: Border(bottom: BorderSide(color: palette.border)),
       ),
       child: Text(
-        '未检测到支持 Vulkan 的显卡，Fotufilm 无法出图。请更新显卡驱动，或换用支持 Vulkan 的显卡。',
+        '未检测到支持 Vulkan 的显卡，已改用 CPU 出图：功能相同，但预览与导出会明显变慢。',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(fontSize: 12, color: palette.text),

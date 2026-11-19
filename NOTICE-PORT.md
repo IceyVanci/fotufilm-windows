@@ -41,7 +41,8 @@
 
 | 文件 | 用途 |
 |---|---|
-| `tools/generate-halide-aot-windows.ps1` | 生成 46 个 Halide AOT 变体 |
+| `tools/generate-halide-aot-windows.ps1` | 生成 52 个 Halide AOT 变体（Vulkan）与共用运行时 |
+| `tools/generate-halide-cpu-windows.ps1`、`tools/generate_halide_cpu_windows.cpp` | 生成 CPU 回退核：develop 两套（普通/环状光晕）、print 四套（反相×单色）、plain_float |
 | `flutter/tool/prepare.ps1` | 从 `web/src` 与字体源生成 `flutter/assets/generated/`（**构建期产物，不入库**） |
 | `packaging/launcher.cpp` 等 | 单文件启动器与压缩打包器（Windows Cabinet LZMS/XPRESS） |
 | `scripts/sync-upstream.ps1`、`scripts/build.ps1` | 重放与构建 |

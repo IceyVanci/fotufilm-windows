@@ -42,6 +42,15 @@ if windowsAOT {
         .unsafeFlags(["-DFOTUFILM_HALIDE_LINUX_AOT", "-I\(aotDirectory)"],
                      .when(platforms: [.windows])))
 }
+// The CPU fallback's kernels (tools/generate-halide-cpu-windows.ps1) sit beside the Vulkan set.
+// Where they are, the shim answers the portable developer's entry points, so a host with no Vulkan
+// device develops instead of refusing to start.
+let windowsCPUKernels = !aotDirectory.isEmpty
+    && FileManager.default.fileExists(atPath: "\(aotDirectory)/develop_flexible.lib")
+if windowsCPUKernels {
+    windowsAOTCXXSettings.append(
+        .unsafeFlags(["-DFOTUFILM_HALIDE_WINDOWS_CPU"], .when(platforms: [.windows])))
+}
 // Built one statement at a time: the manifest's single Package expression runs out of type-checking
 // patience once a list this long is folded into it.
 var windowsAOTLinkerSettings: [LinkerSetting] = []

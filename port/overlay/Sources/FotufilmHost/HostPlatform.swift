@@ -32,6 +32,9 @@ struct HostPlatform {
     var frames: HostFrameCompositor?
     /// Develops on a GPU; the portable Halide CPU developer is used without one.
     var developer: HostDeveloper?
+    /// Whether this build carries the portable CPU developer's kernels, so the engine still
+    /// develops where no device answers (the Windows port's CPU fallback).
+    var portableDeveloper = false
     /// Opens movies (`HostVideo.swift`); without it the editor declines them.
     var videoSource: HostVideoSourceFactory?
     /// Writes movies.
@@ -65,6 +68,25 @@ struct HostPlatform {
         return HostPlatform()
         #endif
     }()
+
+    /// How large and how often the editor asks for a preview. A GPU developer answers a full
+    /// preview within a frame or two, so the editor may keep full-size previews while an edit
+    /// moves and refine sooner; the CPU fallback may not, so it asks for smaller ones and waits
+    /// before refining.
+    private var previewBudget: [String: Any] {
+        if developer != nil {
+            return ["previewBudget": ["settleMs": 80, "initialInteractiveEdge": 1200,
+                                      "maxInteractiveEdge": 1600, "detailDelayMs": 60]]
+        }
+        if portableDeveloper {
+            // Measured on a Ryzen 7 7700, 45 MP NEF: 76 ms for a 956 x 638 film preview and 8 ms
+            // with no film. Smaller previews than the GPU road keeps an edit interactive, and the
+            // settle waits long enough that a drag does not queue develops it cannot keep up with.
+            return ["previewBudget": ["settleMs": 150, "initialInteractiveEdge": 1100,
+                                      "maxInteractiveEdge": 1300, "detailDelayMs": 120]]
+        }
+        return [:]
+    }
 
     /// What the editor may offer with these services.
     var capabilities: [String: Any] {
@@ -101,12 +123,7 @@ struct HostPlatform {
             // editor's plug-ins dialog; their state is asked for with `plugins`.
             "plugins": plugins?.catalogue.map { ["id": $0.id, "name": $0.name] } ?? [],
             "filmPacks": filmPacks != nil,
-        ].merging(developer == nil ? [:] : [
-            // A GPU developer answers a full preview within a frame or two: the editor may keep
-            // full-size previews while an edit moves and refine sooner.
-            "previewBudget": ["settleMs": 80, "initialInteractiveEdge": 1200,
-                              "maxInteractiveEdge": 1600, "detailDelayMs": 60],
-        ]) { current, _ in current }
+        ].merging(previewBudget) { current, _ in current }
     }
 }
 

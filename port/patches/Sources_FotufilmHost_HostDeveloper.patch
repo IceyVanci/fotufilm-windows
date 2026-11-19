@@ -1,0 +1,40 @@
+diff --git a/Sources/FotufilmHost/HostDeveloper.swift b/Sources/FotufilmHost/HostDeveloper.swift
+index dc81e0e..deea234 100644
+--- a/Sources/FotufilmHost/HostDeveloper.swift
++++ b/Sources/FotufilmHost/HostDeveloper.swift
+@@ -86,8 +86,33 @@ struct HalideCPUDeveloper: HostDeveloper {
+                  options: FotufilmEngine.Options, pace: HostDevelopPace, encode: Bool, knee: Float?,
+                  shouldContinue: @escaping () -> Bool,
+                  deliver: (UnsafeBufferPointer<Float>, Range<Int>, Bool) -> Void) throws {
+-        guard !noFilm else {
+-            throw HostEngine.Failure(description: "Developing with no film needs a GPU developer.")
++        if noFilm {
++            // Nothing in the gate: PlainDevelop is the plain path's Swift statement, and the
++            // picture the plain_float kernel draws, so a host with only this developer still
++            // develops Normal. It works on the whole frame, as this developer does.
++            var rgba = [Float](repeating: 1, count: width * height * 4)
++            for i in 0..<(width * height) {
++                for channel in 0..<3 {
++                    let value = scene[i * 4 + channel]
++                    rgba[i * 4 + channel] = value.isFinite ? value : 0
++                }
++            }
++            var plain = PlainDevelop(options: options)
++            rgba.withUnsafeMutableBufferPointer { buffer in
++                guard let base = buffer.baseAddress else { return }
++                if plain.needsToneBase {
++                    var measurement = plain.toneBaseMeasurement(frameWidth: width,
++                                                                frameHeight: height)
++                    measurement.add(linearRGBA: base, rows: 0..<height)
++                    plain.setToneBase(measurement)
++                }
++                plain.apply(linearRGBA: buffer, rows: 0..<height, width: width)
++            }
++            guard shouldContinue() else {
++                throw HostEngine.Failure(description: "Cancelled.", cancelled: true)
++            }
++            rgba.withUnsafeBufferPointer { deliver($0, 0..<height, false) }
++            return
+         }
+         var linear = ImageBuffer(width: width, height: height)
+         for i in 0..<(width * height) {

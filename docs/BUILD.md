@@ -8,7 +8,7 @@
 ```
 F:\Futo\                    维护者工作区（不在仓库里）
 ├─ toolchain\                Swift 6.2、Flutter 3.41.7、Halide、vcpkg
-├─ m0\aot-windows\           生成好的 Halide AOT 核
+├─ m0\aot-windows\           Halide AOT 核（Vulkan 变体 + 共用运行时 + CPU 回退核）
 ├─ work\1.15\                scripts\sync-upstream.ps1 重放出来的树
 └─ dist\                     产物
 ```

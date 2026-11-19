@@ -3,6 +3,9 @@ import Foundation
 #if canImport(CFotufilmCodecs)
 import CFotufilmCodecs
 #endif
+#if canImport(FotufilmHalide)
+import FotufilmHalide
+#endif
 
 extension HostPlatform {
     /// Windows: photographs, scans, stills and thumbnails through the portable codecs
@@ -13,9 +16,14 @@ extension HostPlatform {
     static var windows: HostPlatform {
         var platform = HostPlatform()
         // The AOT Vulkan kernels (FotufilmHalideLinux.cpp, which this port compiles) answer through
-        // the same developer service the Linux desktop uses.
+        // the same developer service the Linux desktop uses. A machine whose driver offers no
+        // Vulkan device gets no developer here, and HostEngine falls back to the portable CPU one
+        // (the kernels tools/generate-halide-cpu-windows.ps1 writes), so it still develops, slowly.
         #if canImport(FotufilmHalide)
-        platform.developer = HalideGPUDeveloper()
+        if fotufilm_halide_gpu_device() != 0 {
+            platform.developer = HalideGPUDeveloper()
+        }
+        platform.portableDeveloper = fotufilm_halide_available() == 1
         #endif
         #if canImport(CFotufilmCodecs)
         platform.decoder = PortableImageDecoder()

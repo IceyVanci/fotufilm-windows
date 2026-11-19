@@ -32,7 +32,7 @@ AOT 生成不要在 harness 的前台/后台任务里跑：任务会随会话重
 | 文档、网页 | 重放一遍即可 | 10 分钟 |
 | 界面文案 | 重放，扫描器列出没有的词条再补 | 30 分钟 |
 | 新增控件 / 目录 | 补词条，可能补图标 | 1–2 小时 |
-| 改 Halide 阶段（`Sources/FotufilmHalide/Stages/*.h`） | 重新生成全部 AOT 核 | 机器时间 30–60 分钟（52 变体、10 路并行） |
+| 改 Halide 阶段（`Sources/FotufilmHalide/Stages/*.h`） | 重新生成全部 AOT 核：`tools/generate-halide-aot-windows.ps1`（Vulkan 52 变体 + 共用运行时）与 `tools/generate-halide-cpu-windows.ps1`（CPU 回退 7 个核），两者写进同一个 `-AotDir` | 机器时间 30–60 分钟（52 变体、10 路并行），CPU 那套另加 2–4 分钟 |
 | 改引擎 C ABI | 改 Host 与 FFI | 半天起 |
 
 ## 最容易出事的三处

@@ -15,7 +15,7 @@ Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，
 
 | 类别 | 内容 |
 |---|---|
-| 构建 | Swift 6.2 Windows 工具链 + MSVC，Halide 走 AOT Vulkan 核（无 JIT） |
+| 构建 | Swift 6.2 Windows 工具链 + MSVC，Halide 走 AOT 核（Vulkan，另加一套 CPU 回退核；无 JIT） |
 | 平台层 | Win32 内存映射替换 POSIX mmap、Windows 宿主能力（浏览器/资源管理器/回收站） |
 | 界面 | Flutter Windows runner，简体中文界面 |
 | 发行 | 单文件便携版 |
@@ -40,7 +40,7 @@ Fotufilm（[fotufilm.com](https://fotufilm.com)）的非官方 Windows 移植，
 
 - Windows 10 1903+ / Windows 11，x64
 - 支持 AVX2 的 CPU（启动时检测，不支持会显示说明并退出）
-- 支持 Vulkan 的显卡（引擎的 GPU 路径只有 Vulkan，没有 CPU 回退；缺少时主界面顶部会常驻提示）
+- 支持 Vulkan 的显卡。没有时自动改用 CPU 出图（同样需要 AVX2），主界面顶部会常驻提示，预览与导出明显变慢
 
 ## 仓库结构
 
