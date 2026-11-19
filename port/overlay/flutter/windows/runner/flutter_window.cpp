@@ -1,12 +1,37 @@
 #include "flutter_window.h"
 
+#include <flutter/standard_method_codec.h>
 #include <windows.h>
 
 #include <optional>
+#include <string>
 
 #include "flutter/generated_plugin_registrant.h"
 
 namespace {
+
+// The window's name when no photograph is open, as main.cpp creates it. Escaped rather than
+// literal: MSVC reads a BOM-less source in the system code page.
+constexpr wchar_t kAppName[] = L"Fotufilm \u80F6\u7247\u6697\u623F";
+
+// What lib/app/workspace.dart sends when no photograph is open.
+constexpr char kNoPhoto[] = "Fotufilm";
+
+// The editor sends UTF-8 (a photograph's name may be Chinese); the title bar wants UTF-16.
+std::wstring Wide(const std::string& utf8) {
+  if (utf8.empty()) {
+    return std::wstring();
+  }
+  const int length = static_cast<int>(utf8.size());
+  const int size =
+      ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), length, nullptr, 0);
+  if (size <= 0) {
+    return std::wstring();
+  }
+  std::wstring text(static_cast<size_t>(size), L'\0');
+  ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), length, text.data(), size);
+  return text;
+}
 
 // Releases the engine's Vulkan device while its loader is still loaded. Windows runs the Halide
 // runtime's destructor during DLL detach, after the driver's loader may be gone, and NVIDIA's
@@ -50,6 +75,26 @@ bool FlutterWindow::OnCreate() {
   RegisterPlugins(flutter_controller_->engine());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
+  // The editor names the window after the photograph open in it (lib/app/workspace.dart). The
+  // toolbar is not the titlebar here and there is no document tab, so the system's title bar is
+  // the only place that name can show.
+  window_channel_ = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+      flutter_controller_->engine()->messenger(), "fotufilm/window",
+      &flutter::StandardMethodCodec::GetInstance());
+  window_channel_->SetMethodCallHandler(
+      [this](const flutter::MethodCall<flutter::EncodableValue>& call,
+             std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+        if (call.method_name() == "setTitle") {
+          const auto* title = std::get_if<std::string>(call.arguments());
+          NameWindow(title != nullptr ? *title : std::string());
+          result->Success();
+          return;
+        }
+        // The rest of the channel is the Mac app's: dragging and zooming the toolbar, recent
+        // files and the sample chart, which this host does not have.
+        result->NotImplemented();
+      });
+
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
     this->Show();
   });
@@ -63,6 +108,9 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  // The channel belongs to the engine: it goes before the controller takes the engine with it,
+  // or its destructor tells a freed messenger about itself.
+  window_channel_.reset();
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
@@ -93,4 +141,21 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
   }
 
   return Win32Window::MessageHandler(hwnd, message, wparam, lparam);
+}
+
+void FlutterWindow::NameWindow(const std::string& title) {
+  HWND window = GetHandle();
+  if (window == nullptr) {
+    return;
+  }
+  // With a photograph open the title is its name and then the app's, as another Windows app
+  // names its document; with none the app stands alone.
+  if (title.empty() || title == kNoPhoto) {
+    ::SetWindowTextW(window, kAppName);
+    return;
+  }
+  std::wstring text = Wide(title);
+  text += L" \u2014 ";
+  text += kAppName;
+  ::SetWindowTextW(window, text.c_str());
 }

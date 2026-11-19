@@ -1,0 +1,14 @@
+diff --git a/flutter/lib/model/document.dart b/flutter/lib/model/document.dart
+index ed33f55..5da07a6 100644
+--- a/flutter/lib/model/document.dart
++++ b/flutter/lib/model/document.dart
+@@ -61,7 +61,8 @@ class PhotoDocument {
+   /// How the engine described the photograph as it opened (`hdr`, `original`, …).
+   Json descriptor = const {};
+ 
+-  String get name => path.split('/').last;
++  /// Its file's name, after either kind of separator: Windows writes backslashes.
++  String get name => path.split(RegExp(r'[/\\]')).last;
+ 
+   /// The camera's frame as a film format, where the file records it (the import's `sensor`).
+   String? get sensorGauge => (descriptor['sensor'] as Map?)?['gauge'] as String?;

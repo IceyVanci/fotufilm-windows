@@ -8,8 +8,8 @@ index 115095b..af215b4 100644
      final files = await chooseFiles([
 -      fileType('Images', imageExtensions),
 -      fileType('Videos', videoExtensions),
-+      fileType('鍥剧墖', imageExtensions),
-+      fileType('瑙嗛', videoExtensions),
++      fileType('图片', imageExtensions),
++      fileType('视频', videoExtensions),
      ], single: editor.gallery.available);
      if (!kIsWeb && files.isNotEmpty) HostWindow.noteRecent([for (final f in files) f.path]);
      // One file brings its folder into the strip.
@@ -18,7 +18,7 @@ index 115095b..af215b4 100644
            width: hit,
            child: _Resizer(
 -            label: 'Resize film list',
-+            label: '璋冩暣鑳剁墖鍒楄〃澶у皬',
++            label: '调整胶片列表大小',
              onDrag: (dx) => layout.setWidth(PanelSide.film, layout.widths.film + dx),
              onEnd: layout.keepWidths,
              onReset: () => layout.setWidth(PanelSide.film, Metrics.filmWidth, keep: true),
@@ -27,7 +27,7 @@ index 115095b..af215b4 100644
            width: hit,
            child: _Resizer(
 -            label: 'Resize darkroom panel',
-+            label: '璋冩暣鏆楁埧闈㈡澘澶у皬',
++            label: '调整暗房面板大小',
              onDrag: (dx) =>
                  layout.setWidth(PanelSide.inspector, layout.widths.inspector - dx),
              onEnd: layout.keepWidths,
@@ -36,7 +36,7 @@ index 115095b..af215b4 100644
    Widget build(BuildContext context) => Semantics(
          button: true,
 -        label: 'Close panel',
-+        label: '鍏抽棴闈㈡澘',
++        label: '关闭面板',
          child: GestureDetector(
            behavior: HitTestBehavior.opaque,
            onVerticalDragUpdate: (d) => onDrag(d.delta.dy),

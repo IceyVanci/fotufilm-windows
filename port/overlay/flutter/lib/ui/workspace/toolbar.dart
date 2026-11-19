@@ -430,6 +430,14 @@ void showMoreOptions(BuildContext anchor, EditorCommands commands) {
         icon: 'help',
         onSelected: () => editor.dialogs.request(AppDialog.support),
       ),
+      // The Mac app's About lives in its menu bar; a Windows window has none, so the More menu
+      // holds it with the rest of that menu.
+      if (!HostWindow.usesMenuBar)
+        MenuItem(
+          label: '关于 Fotufilm',
+          icon: 'info',
+          onSelected: () => editor.dialogs.request(AppDialog.about),
+        ),
     ],
     legalMenuItems(editor.catalogue),
   ];
