@@ -31,6 +31,9 @@
 | `Sources/FotufilmHalide/FotufilmHalide.cpp`、`FotufilmFilmTileBuild.cpp`、`FotufilmNegativeScan.cpp`、`FotufilmTransport.cpp` | 整体包进 `#if !defined(FOTUFILM_HALIDE_LINUX_AOT)`，避免与 AOT 核重复定义 |
 | `Sources/FotufilmHalide/Pipeline/Gpu.h` | 新增 `windows_aot_target(DeviceAPI)`：Windows + X86/64 + AVX2 + Vulkan |
 | `Sources/FotufilmHalide/include/FotufilmHalide.h` | 导出 `fotufilm_halide_shutdown` |
+| `Sources/FotufilmHost/HostFrames+Windows.swift`（新增） | 印相边框合成：排版与材料沿用 Mac 版的 `PrintFramePlacement`/`PrintFrameConfiguration`，用 8 位 RGBA 光栅器绘制纸张、装裱、胶片（含齿孔与缺口）、幻灯片卡与载体片基；边缘文字、DX 条码、纸面光泽暂未绘制 |
+| `Sources/FotufilmHost/HostCodecs+Portable.swift`（补丁） | Windows 的编码器在写出前把边框绘制进像素（Mac 版由 ImageIO 编码器负责）；16 位导出按 8 位边框合成 |
+| `Sources/FotufilmHost/HostDeveloper.swift`（补丁） | CPU 回退时用 `PlainDevelop` 出「无胶片」，不再要求 GPU |
 | `Sources/FotufilmHost/HostPlatform.swift`、`HostPlatform+Windows.swift`（新增） | 平台分派；Windows 走 `HalideGPUDeveloper`，只接线静态图片相关的宿主服务 |
 | `Sources/FotufilmHost/HostDeveloper+HalideGPU.swift`、`CInterface.swift` | GPU 路径接线、引擎销毁时释放设备 |
 | `Sources/CFotufilmCodecs/Utf8Paths.h`（新增）与 11 个编解码 TU | 让 CRT 的窄字符文件 API 按 UTF-8 解析路径。Windows 用 ANSI 代码页（简体中文是 GBK）读窄文件名，而引擎收到的是 Dart 传来的 UTF-8，中文路径的图片因此打不开；模块加载时把字符区域设为 UTF-8 即可，见第六节 |

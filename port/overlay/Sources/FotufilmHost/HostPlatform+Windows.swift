@@ -25,6 +25,9 @@ extension HostPlatform {
         }
         platform.portableDeveloper = fotufilm_halide_available() == 1
         #endif
+        // Print frames are drawn here (HostFrames+Windows.swift): the same placement and materials
+        // the Mac app draws, rasterized into the still instead of through Core Graphics.
+        platform.frames = WindowsFrameCompositor()
         #if canImport(CFotufilmCodecs)
         platform.decoder = PortableImageDecoder()
         platform.scans = PortableScanDecoder()
