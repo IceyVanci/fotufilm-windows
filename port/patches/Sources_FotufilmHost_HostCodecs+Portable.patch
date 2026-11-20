@@ -1,5 +1,5 @@
 diff --git a/Sources/FotufilmHost/HostCodecs+Portable.swift b/Sources/FotufilmHost/HostCodecs+Portable.swift
-index de33dbf..8043d82 100644
+index de33dbf..9d2f81a 100644
 --- a/Sources/FotufilmHost/HostCodecs+Portable.swift
 +++ b/Sources/FotufilmHost/HostCodecs+Portable.swift
 @@ -129,7 +129,7 @@ private extension String {
@@ -49,7 +49,7 @@ index de33dbf..8043d82 100644
 +            }
 +            // A compositor that draws 16 bits frames an export that asked for depth in 16 bits;
 +            // one that draws 8 bits takes the develop's codes and frames those.
-+            let undrawn = HostEngine.Failure(description: "The print frame could not be drawn.")
++            let undrawn = HostEngine.Failure(description: "The print frame does not fit this host's memory at that size. Choose a smaller export size.")
 +            switch still.pixels {
 +            case .display8(let eight):
 +                guard let framed = compositor.frame(eight, width: still.width,
@@ -84,3 +84,10 @@ index de33dbf..8043d82 100644
          }
          let exif = still.metadata == .strip ? nil : still.capture?["exif"] as? Data
          let keepLocation: Int32 = still.metadata == .preserve ? 1 : 0
+@@ -283,4 +327,4 @@ struct PortableStillEncoder: HostStillEncoder {
+         return (still.width, still.height)
+     }
+ }
+-#endif
++#endif
+\ No newline at end of file

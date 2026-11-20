@@ -55,8 +55,9 @@
 
 `flutter/windows/` 整棵目录由 `flutter create --platforms=windows` 生成后修改：
 
-- `runner/main.cpp`：启动前的 AVX2 与 Vulkan 预检、窗口标题「Fotufilm 胶片暗房」、默认尺寸 1560×980
+- `runner/main.cpp`：启动前的 AVX2 与 Vulkan 预检、窗口标题「Fotufilm 胶片暗房」、默认尺寸 1560×980、未处理异常写入 `%LOCALAPPDATA%\Fotufilm\crash.log`（异常码、出错模块内的偏移、时间）
 - `runner/flutter_window.{h,cpp}`：注册 `fotufilm/window` 通道，把编辑器的 `setTitle` 写到系统标题栏（打开的编辑为「照片名 — Fotufilm 胶片暗房」），通道在引擎之前释放
+- `runner/runner.exe.manifest`：在 Flutter 模板的 PerMonitorV2 DPI 声明之外加上 `longPathAware`（超过 260 字符的路径；系统层面仍需 `LongPathsEnabled`，便携版不改注册表）
 - `runner/Runner.rc`：ProductName 与 FileDescription 为「Fotufilm for Windows (unofficial)」，版本串由构建脚本写入
 - 其余为 Flutter 模板文件，逻辑未改
 
