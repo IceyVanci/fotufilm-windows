@@ -1,5 +1,5 @@
 diff --git a/Sources/FotufilmHost/HostCodecs+Portable.swift b/Sources/FotufilmHost/HostCodecs+Portable.swift
-index de33dbf..9917e79 100644
+index de33dbf..8043d82 100644
 --- a/Sources/FotufilmHost/HostCodecs+Portable.swift
 +++ b/Sources/FotufilmHost/HostCodecs+Portable.swift
 @@ -129,7 +129,7 @@ private extension String {
@@ -33,7 +33,7 @@ index de33dbf..9917e79 100644
          let scene = raw.decoded
          let image = HostImage(working: scene.rgba, width: scene.width, height: scene.height,
                                naturalWidth: raw.width, naturalHeight: raw.height,
-@@ -259,8 +263,34 @@ struct PortableStillEncoder: HostStillEncoder {
+@@ -259,8 +263,48 @@ struct PortableStillEncoder: HostStillEncoder {
          guard ffc_can_encode(type) != 0 else {
              throw HostEngine.Failure(description: "This host cannot write \(type).")
          }
@@ -47,25 +47,39 @@ index de33dbf..9917e79 100644
 +            guard let compositor = HostPlatform.current.frames else {
 +                throw HostEngine.Failure(description: "This host cannot draw print frames.")
 +            }
-+            var pixels: [UInt8]
++            // A compositor that draws 16 bits frames an export that asked for depth in 16 bits;
++            // one that draws 8 bits takes the develop's codes and frames those.
++            let undrawn = HostEngine.Failure(description: "The print frame could not be drawn.")
 +            switch still.pixels {
 +            case .display8(let eight):
-+                pixels = eight
++                guard let framed = compositor.frame(eight, width: still.width,
++                                                    height: still.height,
++                                                    configuration: frame, edge: still.frameEdge)
++                else { throw undrawn }
++                still.pixels = .display8(framed.pixels)
++                still.width = framed.width
++                still.height = framed.height
 +            case .display16(let sixteen):
-+                // The frame's materials are 8-bit Display P3 codes; a 16-bit develop is taken to
-+                // the same codes and framed there.
-+                pixels = [UInt8](repeating: 255, count: still.width * still.height * 4)
-+                for i in 0..<(still.width * still.height * 4) {
-+                    pixels[i] = UInt8((sixteen[i] >> 8) & 0xff)
++                if let framed = compositor.frame(sixteen, width: still.width,
++                                                 height: still.height,
++                                                 configuration: frame, edge: still.frameEdge) {
++                    still.pixels = .display16(framed.pixels)
++                    still.width = framed.width
++                    still.height = framed.height
++                } else {
++                    var eight = [UInt8](repeating: 255, count: still.width * still.height * 4)
++                    for i in 0..<(still.width * still.height * 4) {
++                        eight[i] = UInt8((sixteen[i] >> 8) & 0xff)
++                    }
++                    guard let framed = compositor.frame(eight, width: still.width,
++                                                        height: still.height,
++                                                        configuration: frame, edge: still.frameEdge)
++                    else { throw undrawn }
++                    still.pixels = .display8(framed.pixels)
++                    still.width = framed.width
++                    still.height = framed.height
 +                }
 +            }
-+            guard let framed = compositor.frame(pixels, width: still.width, height: still.height,
-+                                                configuration: frame, edge: still.frameEdge) else {
-+                throw HostEngine.Failure(description: "The print frame could not be drawn.")
-+            }
-+            still.pixels = .display8(framed.pixels)
-+            still.width = framed.width
-+            still.height = framed.height
 +            still.frame = nil
          }
          let exif = still.metadata == .strip ? nil : still.capture?["exif"] as? Data

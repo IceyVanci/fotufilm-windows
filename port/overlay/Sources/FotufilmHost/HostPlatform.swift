@@ -165,6 +165,15 @@ protocol HostFrameCompositor {
     /// The framed picture from 8-bit Display P3 pixels, in the same form.
     func frame(_ pixels: [UInt8], width: Int, height: Int, configuration: PrintFrameConfiguration,
                edge: UnexposedEdge.Margins?) -> (pixels: [UInt8], width: Int, height: Int)?
+    /// The framed picture from 16-bit Display P3 pixels, in the same form; nil from a compositor
+    /// that draws in 8 bits only, and the caller frames the dithered 8-bit picture instead.
+    func frame(_ pixels: [UInt16], width: Int, height: Int, configuration: PrintFrameConfiguration,
+               edge: UnexposedEdge.Margins?) -> (pixels: [UInt16], width: Int, height: Int)?
+}
+
+extension HostFrameCompositor {
+    func frame(_ pixels: [UInt16], width: Int, height: Int, configuration: PrintFrameConfiguration,
+               edge: UnexposedEdge.Margins?) -> (pixels: [UInt16], width: Int, height: Int)? { nil }
 }
 
 extension HostImage {

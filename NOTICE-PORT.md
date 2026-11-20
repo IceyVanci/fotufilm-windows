@@ -31,8 +31,8 @@
 | `Sources/FotufilmHalide/FotufilmHalide.cpp`、`FotufilmFilmTileBuild.cpp`、`FotufilmNegativeScan.cpp`、`FotufilmTransport.cpp` | 整体包进 `#if !defined(FOTUFILM_HALIDE_LINUX_AOT)`，避免与 AOT 核重复定义 |
 | `Sources/FotufilmHalide/Pipeline/Gpu.h` | 新增 `windows_aot_target(DeviceAPI)`：Windows + X86/64 + AVX2 + Vulkan |
 | `Sources/FotufilmHalide/include/FotufilmHalide.h` | 导出 `fotufilm_halide_shutdown` |
-| `Sources/FotufilmHost/HostFrames+Windows.swift`（新增） | 印相边框合成：排版与材料沿用 Mac 版的 `PrintFramePlacement`/`PrintFrameConfiguration`，用 8 位 RGBA 光栅器绘制纸张、装裱、胶片（含齿孔与缺口）、幻灯片卡与载体片基；边缘文字、DX 条码、纸面光泽暂未绘制 |
-| `Sources/FotufilmHost/HostCodecs+Portable.swift`（补丁） | Windows 的编码器在写出前把边框绘制进像素（Mac 版由 ImageIO 编码器负责）；16 位导出按 8 位边框合成 |
+| `Sources/FotufilmHost/HostFrames+Windows.swift`（新增） | 印相边框合成：排版与材料沿用 Mac 版的 `PrintFramePlacement`/`PrintFrameConfiguration`，用 8 位或 16 位 RGBA 光栅器绘制纸张、装裱、胶片（齿孔、缺口、边缘文字、DX 条码）、幻灯片卡、载体片基的手工锉边、相纸光泽与反相扫描的片基黑点；字形取系统矢量字（Arial），与 Mac 取 Helvetica 轮廓同为近似 |
+| `Sources/FotufilmHost/HostCodecs+Portable.swift`（补丁） | Windows 的编码器在写出前把边框绘制进像素（Mac 版由 ImageIO 编码器负责）；16 位导出按 16 位合成，位深保持 |
 | `Sources/FotufilmHost/HostDeveloper.swift`（补丁） | CPU 回退时用 `PlainDevelop` 出「无胶片」，不再要求 GPU |
 | `Sources/FotufilmHost/HostPlatform.swift`、`HostPlatform+Windows.swift`（新增） | 平台分派；Windows 走 `HalideGPUDeveloper`，只接线静态图片相关的宿主服务 |
 | `Sources/FotufilmHost/HostDeveloper+HalideGPU.swift`、`CInterface.swift` | GPU 路径接线、引擎销毁时释放设备 |
