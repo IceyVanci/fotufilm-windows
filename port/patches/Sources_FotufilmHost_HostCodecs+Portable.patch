@@ -1,5 +1,5 @@
 diff --git a/Sources/FotufilmHost/HostCodecs+Portable.swift b/Sources/FotufilmHost/HostCodecs+Portable.swift
-index de33dbf..9d2f81a 100644
+index de33dbf..ae5f570 100644
 --- a/Sources/FotufilmHost/HostCodecs+Portable.swift
 +++ b/Sources/FotufilmHost/HostCodecs+Portable.swift
 @@ -129,7 +129,7 @@ private extension String {
@@ -33,12 +33,19 @@ index de33dbf..9d2f81a 100644
          let scene = raw.decoded
          let image = HostImage(working: scene.rgba, width: scene.width, height: scene.height,
                                naturalWidth: raw.width, naturalHeight: raw.height,
-@@ -259,8 +263,48 @@ struct PortableStillEncoder: HostStillEncoder {
+@@ -259,8 +263,55 @@ struct PortableStillEncoder: HostStillEncoder {
          guard ffc_can_encode(type) != 0 else {
              throw HostEngine.Failure(description: "This host cannot write \(type).")
          }
 -        guard still.frame == nil else {
 -            throw HostEngine.Failure(description: "This host cannot draw print frames.")
++        // A destination whose folder has gone says so: the codec's own failure reads as the file
++        // being unwritable, which sends a person looking for a permissions problem instead of a
++        // folder that was moved, renamed or never created.
++        if !FileManager.default.fileExists(atPath: url.deletingLastPathComponent().path) {
++            throw HostEngine.Failure(
++                description: "The folder this export was going into does not exist. Choose another folder.")
++        }
 +        // The frame is drawn here, as the Mac app's encoder draws it (HostExport+ImageIO's
 +        // `picture`): the develop hands over the photograph, or the piece of film around it, and
 +        // the plan states the material.
@@ -84,7 +91,7 @@ index de33dbf..9d2f81a 100644
          }
          let exif = still.metadata == .strip ? nil : still.capture?["exif"] as? Data
          let keepLocation: Int32 = still.metadata == .preserve ? 1 : 0
-@@ -283,4 +327,4 @@ struct PortableStillEncoder: HostStillEncoder {
+@@ -283,4 +334,4 @@ struct PortableStillEncoder: HostStillEncoder {
          return (still.width, still.height)
      }
  }

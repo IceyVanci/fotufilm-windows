@@ -10,7 +10,7 @@
 | 项 | 值 |
 |---|---|
 | 上游 | `DhaliwalX/fotufilm-engine` tag **v1.17**，commit `87a3f46`（用 tag 标定：上游 `version.env` 到 v1.17 仍是 `MARKETING_VERSION=1.14`，未随发布更新） |
-| 移植版本 | `1.17.0-w4` |
+| 移植版本 | `1.17.0-w5` |
 | 工具链 | Swift 6.2（Windows）、Flutter 3.50.0（Dart 3.14.0）、Halide 22.0.0、MSVC 14.50、Windows SDK 10.0.26100 |
 
 ## 规模
@@ -176,3 +176,52 @@ Windows 版现在能打开尼康“高效率”压缩（HE / HE*）的 NEF：Z 6
 
 对应补丁：`port/patches/Sources_FotufilmHost_HostEngine.patch`、
 `port/patches/flutter_lib_ui_workspace_overlays.patch`。
+## 十、1.17.0-w5 —— 没有 Vulkan 也能出图，印相边框补完
+
+### 没有 Vulkan 设备时改用 CPU
+
+原先 Windows 只有 Vulkan 一条路：没有可用设备时引擎拒绝启动。现在多了一套本机编译的 AVX2
+CPU 核（`develop_flexible` 的全阶段与环状光晕两套、`print_0..3`、`plain_float`），全部
+NoRuntime，与 Vulkan 那套共用同一个运行时；`FotufilmHalideLinux.cpp` 实现便携开发者要的
+入口，胶片颗粒 tile 走主机内存。没有设备时引擎直接落到 CPU，主界面顶部常驻提示
+「未检测到支持 Vulkan 的显卡，已改用 CPU 出图……」。
+
+| 项 | Vulkan | CPU |
+|---|---|---|
+| 45 MP（8256×5504）Gold 200 JPEG 导出 | 3.2 s | 17.0 s |
+| 打开到首帧预览 | 1012 ms | 536 ms |
+| 956×638 预览，Gold 200 | 23 ms | 76 ms（p90 81） |
+| 956×638 预览，无胶片 | 16 ms | 8 ms |
+
+CPU 核本身是多线程的：Halide 的 `parallel` 走运行时线程池，实测峰值 15 线程。慢在带宽
+而不是线程数——全尺寸每一级中间结果都是 45 MP 的 float32。
+
+### 印相边框
+
+`Sources/FotufilmHost/HostFrames+Windows.swift` 补齐了 Mac 版 `PrintFrameRenderer` 的全部
+内容：边缘打印机的文字（系统矢量字，Arial 代 Helvetica，与 Mac 取 Helvetica 轮廓同为近似）、
+DX 条码的钟轨与数据轨、反相扫描的片基黑点（线性光抬升、屏遮保白）、RC 相纸的 0.17 mm 光泽、
+载体片基的手工锉边（与 Mac 同一套 value noise，逐位一致）、幻灯片卡口的圆角开口。画布是
+8/16 位共用的泛型，16 位导出按 16 位合成——16 位 TIFF 不再被压到 8 位。
+
+多边形改为扫描线填充（每行四条子扫描线，两端按像素分解）：手工锉边的路径有一千个顶点，
+逐像素点内测试会让 45 MP 的载体边框跑上几分钟。
+
+| 项 | 结果 |
+|---|---|
+| 45 MP 胶片边框导出（JPEG） | 4.8 s（无边框 3.2 s） |
+| 45 MP 胶片边框导出（16 位 TIFF） | 位深 16，ICC Display P3 |
+| 45 MP 带边框 16 位导出峰值内存 | 833 MB |
+| 验证 | 导出样张逐项检查：KODAK GB 200-7 / 1 / 1A 落位、portra400 的 DX 条码、载体毛边、相纸颗粒 |
+
+### 窗口与提示
+
+窗口标题跟随打开的照片（「照片名 — Fotufilm 胶片暗房」），More 菜单里加了「关于 Fotufilm」。
+
+### 稳定性
+
+- 未处理异常写 `%LOCALAPPDATA%\Fotufilm\crash.log`：异常码、出错模块内的偏移与时间。
+- runner 清单声明 `longPathAware`（系统仍需开 `LongPathsEnabled`，便携版不改注册表）。
+- 导出的目标文件夹不存在时直接说 “The folder this export was going into does not exist.”，
+  不再报成「文件写不进去」。
+- 中文、空格、emoji 路径（`F:\Futo\tmp\中文 目录 📷\照片.NEF`）已验证可打开、可导出。
